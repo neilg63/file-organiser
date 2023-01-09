@@ -43,6 +43,16 @@ pub fn scan_directory(path_str:String, show_files: bool, max_depth: u8, target_d
     resource_tree.show(show_files);
 }
 
+pub fn days_age_display(days: u32, is_after: bool) -> String {
+    if days > 0 {
+        let start = if is_after { "newer"} else { "older" };
+        let day_word = if days == 1 { "day" } else { "days"};
+        format!("{} than {} {} old", start, days, day_word)
+    } else {
+        "All ages".to_owned()
+    }
+}
+
 fn main() {
     let args = Args::parse();
     let curr_ref = ".".to_string() ;
@@ -76,10 +86,13 @@ fn main() {
 
     let min_size_display = size_display(sizes.0, "min.");
     let max_size_display = size_display(sizes.1, "max.");
-    let size_display = format!("{} {}", min_size_display, max_size_display);
+    let has_size_constraint = sizes.0 > 0 || sizes.0 > 0;
+    let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { "All sizes".to_owned() };
     
     // cprintln!("total\t<green>{}</green>\tsize\t<blue>{}</blue>\t{}\t{}", num_files, smart_size(total_bytes), extensions.join(","), size_display);
-
-    println!("#size: {}\textensions: {}\tmove: {}, delete: {}", size_display, extensions.join(","), move_mode, delete_mode);
+    let ext_text = if extensions.len() > 0 { extensions.join(", ") } else { "all".to_owned() };
+    let days = if is_after { after } else { before };
+    let age_range = days_age_display(days, is_after);
+    cprintln!("<yellow>{: <15}</yellow>\tsize range: <blue>{: >9}</blue>\textensions: {}\tmove: {}, delete: {}", age_range, size_display, ext_text, move_mode, delete_mode);
     
 }

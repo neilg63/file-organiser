@@ -133,7 +133,7 @@ impl ResourceSet {
       }
     }
     let files_word = if self.count() == 1 { "file" } else { "files" };
-    cprintln!("<blue>{}</blue> {}\t{}\t<yellow>{}</yellow>", self.count(), files_word, self.smart_size(), self.path_display(root_ref));
+    cprintln!("<blue>{: >8}</blue> {}\t{}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.smart_size(), self.path_display(root_ref));
   }
 
 }
@@ -213,7 +213,7 @@ impl ResourceTree {
 
   pub fn num_sub_dirs_display(&self) -> String {
     if self.num_sub_dirs() > 0 {
-      let word = if self.num_sub_dirs() == 1 { "subdirectory" } else { "subdirectoris" };
+      let word = if self.num_sub_dirs() == 1 { "subdirectory" } else { "subdirectories" };
       format!("{} {}", self.num_sub_dirs(), word)
     } else {
       "".to_owned()
@@ -252,7 +252,7 @@ impl ResourceTree {
         total_bytes += directory.size();
       }
     }
-    cprintln!("total: <green>{}</green>\tsize: <blue>{}</blue>\t{}\t<yellow>{}</yellow>\t{}", num_files, smart_size(total_bytes), self.smart_size(), self.path_display(),self.num_sub_dirs_display());
+    cprintln!("total: <green>{}</green>\tsize: <blue>{}</blue>\t{}\t<yellow>{}</yellow>\t{}\tmax depth: {}", num_files, smart_size(total_bytes), self.smart_size(), self.path_display(),self.num_sub_dirs_display(), self.max_depth);
   }
 
 }
