@@ -19,7 +19,7 @@ use crate::resource_row::*;
 pub fn scan_directory(path_str:String, show_files: bool, max_depth: u8, target_days: f64, is_after: bool, extensions: &Vec<String>, &sizes: &(u64, u64)) {
     let mut root_ref:Option<DirEntry> = None;
     let mut resource_tree: ResourceTree = ResourceTree::new(max_depth);
-    let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(max_depth as usize);
+    let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(max_depth as usize).follow_links(true);
     for file in target_dir.into_iter().filter_map(|file| file.ok()) {
         let ft = file.file_type();
         if ft.is_dir() {
@@ -29,8 +29,6 @@ pub fn scan_directory(path_str:String, show_files: bool, max_depth: u8, target_d
             }
             let r_set = ResourceSet::new(&file);
             resource_tree.push(&r_set);
-            //curr_set = Some(Rc::from(r_set));
-            // cprintln!("<red>{}</red>", to_relative_path(&file, &root_ref));
         } else {
             let resource = ResourceRow::new(&file);
             if resource.is_ranges(target_days, is_after, &sizes, &extensions) {
@@ -47,8 +45,6 @@ pub fn scan_directory(path_str:String, show_files: bool, max_depth: u8, target_d
 
 fn main() {
     let args = Args::parse();
-
-    // let list_args = format!("-{}", args.list);
     let curr_ref = ".".to_string() ;
     let path_arg = args.path.unwrap_or(curr_ref.clone());
     let curr_path = env::current_dir().unwrap().as_os_str().to_str().unwrap().to_string();
@@ -63,12 +59,7 @@ fn main() {
 
     let extensions:Vec<String> = extract_extensions(&args.ext);
     let sizes = extract_sizes(&args.size);
-/*     let result = run_cmd!(find $path_str -mtime $time_arg -exec ls $list_args $capture $end);
-    if let Ok(info) = result {
-        println!("{}, {}, {:?}", list_args, path_arg, info);
-    } else {
-        println!("{:?}", result.err());
-    } */
+
     let target_days = time as f64;
 
     
