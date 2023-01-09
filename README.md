@@ -1,6 +1,7 @@
 # SmartMove Quick Bulk File Management Utility
 
-Smartmove is a command line tool to supplement _ls_, _exa_ and _find_ and let you list, move or delete large numbers of files filtered by age, file type and/or size range.
+Smartmove is a command line tool that lists, moves or deletes large numbers of files filtered by age, file extension and/or size range.
+It does not seek to replace common utilities such as _ls_, _find_ and _exa_ combined with _mv_ and _rm_, but provides a more transparent streamlined workflow when managing large volumes of files.
 
 NB: This is currently under development and have yet to add the deletion and movement features. It only shows an overview and/or lists files. The other features will come soon.
 
