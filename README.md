@@ -19,6 +19,10 @@ Should you wish to delete these files, add a remove flag
 ## Arguments
 
 - --before, -b only files modified before the specified number of days ago, --before 30 older than 30 days
-- --after, -b only files modified after the specified number of days ago, --newer 30 newer than 30 days
-- --size, -e size range with k (KB), m (MB) or g (GB) unit suffixes. One size is assumed to be the minimum. To specify the maximum only prefix with a comma or use 0-1MB
+- --after, -a only files modified after the specified number of days ago, --newer 30 newer than 30 days
+- --size, -s file size range with k (KB), m (MB) or g (GB) unit suffixes. e.g. 1-2M = 1MB to 2MB. One size alone is assumed to be the minimum. To set only a maximum prefix with a comma ( ,5MB) or use a 0-5M range.
 - --ext, -e extensions, omit to allow all extensions
+- --list, -l Flag to show individual file details rather than just the overview
+- --max-depth, -d Max depth of subdirectories to scan. Defaults to 1.
+- --move, -m Move to specified new target directory
+- --remove, -x Delete files filtered by the above criteria
