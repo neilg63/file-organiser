@@ -241,6 +241,14 @@ impl ResourceTree {
     size
   }
 
+  pub fn num_files(&self) -> usize {
+    let mut num = 0;
+    for row in &self.directories {
+      num += row.count();
+    }
+    num
+  }
+
   pub fn path_display(&self) -> String {
       if let Some(root) = &self.parent {
         if let Some(root_path) = root.to_owned().into_path().to_str() {
@@ -289,23 +297,18 @@ impl ResourceTree {
   }
 
   pub fn show(&self, show_files: bool) {
-    let mut num_files: usize = 0;
-    let mut total_bytes: u64 = 0;
     for directory in &self.directories {
       if self.parent.is_some() {
         if directory.as_ref().depth() < self.max_depth {
           directory.as_ref().show(&self.parent, show_files);
         }
-        num_files += directory.count();
-        total_bytes += directory.size();
       }
     }
+    self.show_extension_stats();
     cprintln!("{: <10} <yellow>{}</yellow>", "path", self.path_display());
-    cprintln!("{: <10} <green>{}</green>", "total", num_files);
-    cprintln!("{: <10} <green>{}</green>", "size", total_bytes);
+    cprintln!("{: <10} <green>{}</green>", "total", self.num_files());
     cprintln!("{: <10} <blue>{}</blue>", "size", self.smart_size());
     cprintln!("{: <10} {}", "max depth", self.max_depth);
-    self.show_extension_stats();
   }
 
 }

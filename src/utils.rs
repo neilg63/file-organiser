@@ -32,6 +32,11 @@ pub fn extract_extensions<'a>(ext_list: &str) -> Vec<String> {
   if ext_list.clone().len() > 2 { ext_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
 }
 
+pub fn extract_move_target(move_opt: Option<String>) -> (String, bool) {
+  let move_target = move_opt.unwrap_or("".to_owned());
+  (move_target.clone(), move_target.len() > 0)
+}
+
 pub fn extract_timestamp(file: &DirEntry) -> u64 {
     let mut ts = 0u64;
     if let Ok(meta) = file.metadata() {
@@ -42,6 +47,19 @@ pub fn extract_timestamp(file: &DirEntry) -> u64 {
         }
     }
     ts
+}
+
+pub fn build_action_text(delete_mode: bool, move_mode: bool, move_target: &str) -> String {
+  let mut action_parts: Vec<&str> = vec![];
+  if move_mode {
+      action_parts.push("move to");
+      action_parts.push(move_target);
+  } else if delete_mode { 
+      action_parts.push("delete");
+  } else {
+    action_parts.push("list");
+  }
+  action_parts.join(" ").to_owned()
 }
 
 pub fn is_in_extensions(ext: &String, extensions: &Vec<String>) -> bool {
@@ -80,6 +98,38 @@ pub fn extract_size_val(num_chars: &Vec<char>, unit: char) -> u64 {
         }
     }
     int_val
+}
+
+pub fn extract_age(size_str: &String) -> f64 {
+  let chars: Vec<char> = size_str.to_lowercase().chars().into_iter().collect();
+  let mut num = 0f64;
+  let mut num_chars: Vec<char> = vec![];
+  let mut has_number = false;
+  let mut div = 1f64;
+  let mut has_unit = false;
+  for (index, char) in chars.into_iter().enumerate() {
+    if char.is_numeric() {
+      has_number = true;
+    }
+    if (char.is_numeric() || (char == '.' && has_number)) && !has_unit {
+      num_chars.push(char);
+    } else if index > 0 && has_number && char != ',' && !char.is_numeric() && div == 1f64 {
+      div = match char {
+        's' => 86400f64,
+        'm' => 1440f64,
+        'h' => 24f64,
+        'w' => 1f64/7f64,
+        'y' => 1f64/365.25f64,
+        _ => 1f64
+      };
+      has_unit = true;
+    }
+  }
+  let num_str = num_chars.iter().collect::<String>();
+  if let Ok(num_fl) = num_str.parse::<f64>() {
+    num = num_fl;
+  }
+  num / div
 }
 
 pub fn extract_sizes(size_str: &String) -> (u64, u64) {
@@ -170,11 +220,57 @@ pub fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
     }
 }
 
-pub fn days_age_display(days: u32, is_after: bool) -> String {
-    if days > 0 {
+pub fn extract_day_ref_pairs(days: f64) -> (f64, String) {
+  let mut unit = "day";
+  let mut num = days;
+  if days < 0.5 {
+    if days >= 1f64/24f64 {
+      num *= 24f64;
+      unit = "hour";
+    } else if days >= 1f64/1440f64 {
+      num *= 1440f64;
+      unit = "min";
+    } else {
+      num *= 86400f64;
+      unit = "sec";
+    }
+  } else if days > 730.5 {
+    unit = "year";
+    num /= 362.25;
+  }
+  (num, unit.to_owned())
+}
+
+pub fn smart_dec_format(num: f64) -> String {
+  let num_fmt = format!("{:.3}", num);
+  let num_parts = num_fmt.split(".").into_iter().collect::<Vec<&str>>();
+  let base_num = num_parts.get(0).unwrap().to_owned();
+  let mut dec_chars:Vec<char> = vec![];
+  if num_parts.len() > 1 {
+    let second = num_parts.get(1).unwrap().chars().rev().into_iter();
+    let mut is_zero = true;
+    for (index, digit) in second.enumerate() {
+      if digit != '0' && is_zero {
+        dec_chars.push(digit);
+        is_zero = false;
+      }
+    }
+  }
+  let has_decimals = dec_chars.len() > 0;
+  if has_decimals { 
+    format!("{}.{}", base_num, dec_chars.into_iter().collect::<String>())
+  } else { 
+    base_num.to_owned()
+  }
+}
+
+pub fn days_age_display(days: f64, is_after: bool) -> String {
+    if days > 0f64 {
         let start = if is_after { "newer"} else { "older" };
-        let day_word = if days == 1 { "day" } else { "days"};
-        format!("{} than {} {} old", start, days, day_word)
+        let pl = if days == 1f64 { "" } else { "s"};
+        let (num, unit) = extract_day_ref_pairs(days);
+        let num_display = smart_dec_format(num);
+        format!("{} than {} {}{}", start, num_display, unit, pl)
     } else {
         "All ages".to_owned()
     }

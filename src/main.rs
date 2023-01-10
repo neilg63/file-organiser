@@ -52,9 +52,9 @@ fn main() {
     let path_arg = args.path.unwrap_or(curr_ref.clone());
     let curr_path = env::current_dir().unwrap().as_os_str().to_str().unwrap().to_string();
     let path_str = if path_arg == curr_ref { curr_path.clone().to_owned() } else if is_full_path(path_arg.as_str()) { path_arg.to_owned() } else { format!("{}/{}", curr_path, path_arg) };
-    let before = args.before;
-    let after = args.after;
-    let is_after = after > 0;
+    let before = extract_age(&args.before);
+    let after = extract_age(&args.after);
+    let is_after = after > 0f64;
     let time = if is_after { after } else { before };
     let max_depth = if args.max_depth > 0 { args.max_depth } else { 1 };
 
@@ -66,8 +66,7 @@ fn main() {
     let target_days = time as f64;
 
     
-
-    let move_mode = args.r#move.is_some() && args.r#move.unwrap().len() > 0;
+    let (move_target, move_mode) = extract_move_target(args.r#move);
     
     let delete_mode = !move_mode && args.remove;
     if path_info.exists {
@@ -83,9 +82,13 @@ fn main() {
     let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { "All sizes".to_owned() };
     
     // cprintln!("total\t<green>{}</green>\tsize\t<blue>{}</blue>\t{}\t{}", num_files, smart_size(total_bytes), extensions.join(","), size_display);
-    let ext_text = if extensions.len() > 0 { extensions.join(", ") } else { "all".to_owned() };
+    // let ext_text = if extensions.len() > 0 { extensions.join(", ") } else { "all".to_owned() };
     let days = if is_after { after } else { before };
     let age_range = days_age_display(days, is_after);
-    cprintln!("<yellow>{: <15}</yellow>\tsize range: <blue>{: >9}</blue>\textensions: {}\tmove: {}, delete: {}", age_range, size_display, ext_text, move_mode, delete_mode);
+    cprintln!("<yellow>{: <15}</yellow>", age_range);
+    cprintln!("{: >10} <blue>{: >9}</blue>", "size range", size_display);
+    cprintln!("{: >10} <cyan>{: >9}</cyan>", "extensions", extensions.join(", "));
+    let action_text = build_action_text(delete_mode, move_mode, &move_target);
+    cprintln!("{} <yellow>{: <15}</yellow>", "action", action_text);
     
 }
