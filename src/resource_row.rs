@@ -3,7 +3,7 @@ use walkdir::{DirEntry};
 use color_print::cprintln;
 extern crate chrono;
 use chrono::prelude::*;
-use std::{os::unix::prelude::MetadataExt};
+use std::{os::unix::prelude::MetadataExt, collections::HashMap};
 
 #[derive(Debug, Clone)]
 pub struct ResourceRow {
@@ -133,9 +133,22 @@ impl ResourceSet {
       }
     }
     let files_word = if self.count() == 1 { "file" } else { "files" };
-    cprintln!("<blue>{: >8}</blue> {}\t{}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.smart_size(), self.path_display(root_ref));
+    cprintln!("<blue>{: >8}</blue> {}\t{: >10}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.smart_size(), self.path_display(root_ref));
   }
 
+}
+
+#[derive(Debug, Clone)]
+pub struct ExtensionStats {
+  pub key: String,
+  pub count: u32,
+  pub size: u64
+}
+
+impl ExtensionStats {
+  pub fn new(key: String, count: u32, size: u64) -> Self {
+    ExtensionStats { key, count, size }
+  }
 }
 
 #[derive(Debug, Clone)]
@@ -230,7 +243,11 @@ impl ResourceTree {
 
   pub fn path_display(&self) -> String {
       if let Some(root) = &self.parent {
-        to_relative_path(&root, &self.parent)
+        if let Some(root_path) = root.to_owned().into_path().to_str() {
+          root_path.to_owned()
+        } else {
+          "".to_owned()  
+        }
       } else {
         "".to_owned()
       }
@@ -238,6 +255,37 @@ impl ResourceTree {
 
   pub fn smart_size(&self) -> String {
       smart_size(self.size())
+  }
+
+  pub fn build_extension_map(&self) -> Vec<ExtensionStats> {
+    let mut map: HashMap<String, (u32, u64)> = HashMap::new();
+    for directory in &self.directories {
+      if directory.count() > 0 {
+        for file in &directory.resources {
+          let mut ext_count: u32 = 1;
+          let mut ext_size: u64 = 1;
+          if map.contains_key(&file.extension) {
+            let (curr_count, curr_size) = map.get_mut(&file.extension).unwrap().to_owned();
+            ext_count = curr_count + 1;
+            ext_size = curr_size + file.size();
+          }
+          map.insert(file.extension.to_owned(), (ext_count, ext_size));
+        }
+      }
+    }
+    let mut ext_stats: Vec<ExtensionStats> = vec![];
+    for (key, item) in map.into_iter() {
+      ext_stats.push(ExtensionStats::new(key, item.0, item.1));
+    }
+    ext_stats.sort_by(|a, b| b.size.cmp(&a.size));
+    ext_stats
+  }
+
+  pub fn show_extension_stats(&self) {
+    for row in self.build_extension_map().into_iter() {
+      let file_word = if row.count == 1 { "file" } else { "files "};
+      cprintln!("<yellow>{: >10}</yellow>\t<blue>{: >9}</blue> {}\t{}", row.key, row.count, file_word, smart_size(row.size));
+    }
   }
 
   pub fn show(&self, show_files: bool) {
@@ -252,7 +300,12 @@ impl ResourceTree {
         total_bytes += directory.size();
       }
     }
-    cprintln!("total: <green>{}</green>\tsize: <blue>{}</blue>\t{}\t<yellow>{}</yellow>\t{}\tmax depth: {}", num_files, smart_size(total_bytes), self.smart_size(), self.path_display(),self.num_sub_dirs_display(), self.max_depth);
+    cprintln!("{: <10} <yellow>{}</yellow>", "path", self.path_display());
+    cprintln!("{: <10} <green>{}</green>", "total", num_files);
+    cprintln!("{: <10} <green>{}</green>", "size", total_bytes);
+    cprintln!("{: <10} <blue>{}</blue>", "size", self.smart_size());
+    cprintln!("{: <10} {}", "max depth", self.max_depth);
+    self.show_extension_stats();
   }
 
 }

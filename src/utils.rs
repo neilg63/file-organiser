@@ -169,3 +169,13 @@ pub fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
         current.path().to_str().unwrap_or("").to_string()
     }
 }
+
+pub fn days_age_display(days: u32, is_after: bool) -> String {
+    if days > 0 {
+        let start = if is_after { "newer"} else { "older" };
+        let day_word = if days == 1 { "day" } else { "days"};
+        format!("{} than {} {} old", start, days, day_word)
+    } else {
+        "All ages".to_owned()
+    }
+}

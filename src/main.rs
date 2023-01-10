@@ -11,9 +11,11 @@ use color_print::cprintln;
 mod args;
 mod resource_row;
 mod utils;
+mod path_info;
 
 use crate::utils::*;
 use crate::resource_row::*;
+use crate::path_info::*;
 
 
 pub fn scan_directory(path_str:String, show_files: bool, max_depth: u8, target_days: f64, is_after: bool, extensions: &Vec<String>, &sizes: &(u64, u64)) {
@@ -43,15 +45,6 @@ pub fn scan_directory(path_str:String, show_files: bool, max_depth: u8, target_d
     resource_tree.show(show_files);
 }
 
-pub fn days_age_display(days: u32, is_after: bool) -> String {
-    if days > 0 {
-        let start = if is_after { "newer"} else { "older" };
-        let day_word = if days == 1 { "day" } else { "days"};
-        format!("{} than {} {} old", start, days, day_word)
-    } else {
-        "All ages".to_owned()
-    }
-}
 
 fn main() {
     let args = Args::parse();
@@ -65,8 +58,8 @@ fn main() {
     let time = if is_after { after } else { before };
     let max_depth = if args.max_depth > 0 { args.max_depth } else { 1 };
 
-    let has_root = Path::new(&path_str).exists();
-
+    let path_info = PathInfo::new(&path_str);
+    
     let extensions:Vec<String> = extract_extensions(&args.ext);
     let sizes = extract_sizes(&args.size);
 
@@ -77,8 +70,8 @@ fn main() {
     let move_mode = args.r#move.is_some() && args.r#move.unwrap().len() > 0;
     
     let delete_mode = !move_mode && args.remove;
-    if has_root {
-        scan_directory(path_str, args.list, max_depth, target_days, is_after, &extensions, &sizes);
+    if path_info.exists {
+        scan_directory(path_info.canonical, args.list, max_depth, target_days, is_after, &extensions, &sizes);
     } else {
        cprintln!("<red>The target directory {}</red> does not exist", path_str); 
     }
