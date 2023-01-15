@@ -24,10 +24,19 @@ Should you wish to delete these files, add a remove flag
 - --size, -s file size range with k (KB), m (MB) or g (GB) unit suffixes. e.g. 1-2M = 1MB to 2MB. One size alone is assumed to be the minimum. To set only a maximum prefix with a comma ( ,5MB) or use a 0-5M range.
 - --ext, -e extensions, omit to allow all extensions
 - --not_ext, -n extensions to be excluded, e.g. move or delete all files that do not include these extensions
+- --exclude-dirs, -q directories at any nesting level to be excluded
 - --list, -l Flag to show individual file details rather than just the overview
-- --groups, -g Flag to show stats by extension groups before the overview
+- --groups, -g Flag to show stats by extension groups before the main overview
 - --max-depth, -d Max depth of subdirectories to scan. Defaults to 255 (pratcically unlimited).
 - --pattern, -p Match pattern for the file name
 - --move, -m Move to specified new target directory
 - --delete, -u Delete files filtered by the above criteria
 - --force, -f Bypass prompt for bulk deletion (useful for cron jobs)
+
+## Installation
+
+- First ensure you have installed the [Rust Cargo compiler](https://doc.rust-lang.org/cargo/getting-started/installation.html) for your operating system
+- checkout out repository and change into the repository directory
+- Run `cargo build --release`
+- The executable will be at `target/release/smartmove`
+- Add an alias to the file or move it to a directory within
