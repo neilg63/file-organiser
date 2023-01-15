@@ -29,6 +29,9 @@ Should you wish to delete these files, add a remove flag
 - --groups, -g Flag to show stats by extension groups before the main overview
 - --max-depth, -d Max depth of subdirectories to scan. Defaults to 255 (pratcically unlimited).
 - --pattern, -p Match pattern for the file name
+- --starts-with Match pattern from the start of the file name
+- --ends-with Match pattern from the end of the file name, with or without the extension
+- --regex-mode, -x Interpret the above pattern as a full regular express, e.g. `a*` means any number of the preceding character.
 - --move, -m Move to specified new target directory
 - --delete, -u Delete files filtered by the above criteria
 - --force, -f Bypass prompt for bulk deletion (useful for cron jobs)
