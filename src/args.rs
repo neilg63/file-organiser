@@ -26,7 +26,7 @@ pub struct Args {
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub not_ext: String,
 
-  #[clap(long, value_parser, default_value_t = empty_string()) ]
+  #[clap(short = 'j', long, value_parser, default_value_t = empty_string()) ]
   pub exclude_dirs: String,
 
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]

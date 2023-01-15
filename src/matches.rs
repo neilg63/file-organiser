@@ -15,7 +15,7 @@ pub fn match_string(source: String, pattern: &String, case_insensitive: bool, bo
     _ => ""
   };
   let end_bounds = match bounds {
-    MatchBounds::End => if pattern.ends_with("$") { "" } else { "$" },
+    MatchBounds::End => if pattern.ends_with("$") { "" } else { "(\\.\\w+)?$" },
     _ => ""
   };
   let parsed_pattern = match mode {
