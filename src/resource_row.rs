@@ -1,9 +1,30 @@
 use crate::utils::*;
 use walkdir::{DirEntry};
+use std::path::{Path, PathBuf};
 use color_print::cprintln;
 extern crate chrono;
 use chrono::prelude::*;
 use std::{os::unix::prelude::MetadataExt, collections::HashMap};
+use crate::matches::*;
+use crate::criteria::*;
+
+#[derive(Debug, Clone)]
+pub struct DetailLevel {
+    pub show_files: bool,
+    pub show_extension_groups: bool,
+    pub show_void_directories: bool,
+}
+
+impl DetailLevel {
+    pub fn new (show_files: &bool, show_extension_groups: &bool, show_void_directories: &bool) -> Self {
+        DetailLevel { 
+          show_files: show_files.to_owned(),
+          show_extension_groups: show_extension_groups.to_owned(),
+          show_void_directories: show_void_directories.to_owned()
+        }
+    }
+}
+
 
 #[derive(Debug, Clone)]
 pub struct ResourceRow {
@@ -33,6 +54,13 @@ impl ResourceRow {
         is_in_extensions(&self.extension, extensions)
     }
 
+    pub fn is_not_in_excluded_dir(&self, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
+      is_not_excluded_dir(&self.file, e_dirs, root_ref)
+    }
+
+    pub fn file_name(&self) -> String {
+      self.file.file_name().to_str().unwrap_or("").to_owned()
+    }
 
     pub fn size(&self) -> u64 {
         if let Ok(meta) = self.file.metadata() {
@@ -46,6 +74,18 @@ impl ResourceRow {
         smart_size(self.size())
     }
 
+    pub fn path_ref(&self) -> &Path {
+      self.file.path()
+    }
+
+    pub fn matches(&self, pattern: &Option<String>, bounds: MatchBounds, mode: MatchMode) -> bool {
+      if let Some(pattern_str) = pattern {
+        match_string(self.file_name(), pattern_str, true, bounds, mode) 
+      } else {
+        true
+      }
+    }
+
     pub fn is_in_size_range(&self, sizes: &(u64, u64)) -> bool {
         let (min, max) = sizes.to_owned();
         let size = self.size();
@@ -54,6 +94,10 @@ impl ResourceRow {
 
     pub fn is_in_day_range(&self, target_days: f64, is_after: bool) -> bool {
         (is_after && self.days_old() <= target_days) || (!is_after && self.days_old() >= target_days)
+    }
+
+    pub fn matches_criteria(&self, criteria: &Criteria) -> bool {
+        self.is_in_day_range(criteria.age, criteria.newer) && self.is_in_size_range(&criteria.sizes) && self.has_valid_extension(&criteria.include_extensions) && self.matches(&criteria.pattern, MatchBounds::Open, criteria.match_mode)
     }
 
     pub fn is_ranges(&self, target_days: f64, is_after: bool, sizes: &(u64, u64), extensions: &Vec<String>) -> bool {
@@ -66,6 +110,14 @@ impl ResourceRow {
 
     pub fn file_display(&self, root_ref: &Option<DirEntry>) -> String {
         to_relative_path(&self.file, root_ref)
+    }
+
+    pub fn directory_path_string(&self) -> String {
+      if let Some(parent_dir) = &self.file.path().parent() {
+        path_to_string(parent_dir)
+      } else {
+        "".to_string()
+      }
     }
 
     pub fn depth(&self) -> usize {
@@ -81,7 +133,7 @@ impl ResourceRow {
     }
 
     pub fn show(&self, root_ref: &Option<DirEntry>) {
-        cprintln!("{} days\t<green>{}</green>\t<blue>{: >9}</blue>\t{}\t{}\t<yellow>{}</yellow>", self.day_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), self.file_display(root_ref));
+        cprintln!("{} days\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t<yellow>{}</yellow>", self.day_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), self.file_display(root_ref));
     }
 
 }
@@ -105,6 +157,12 @@ impl ResourceSet {
   pub fn count(&self) -> usize {
     self.resources.len()
   }
+
+
+
+  pub fn is_not_excluded_dir(&self, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
+    is_not_excluded_dir(&self.parent, e_dirs, root_ref)
+  }
   
   pub fn size(&self) -> u64 {
     let mut size = 0u64;
@@ -119,7 +177,11 @@ impl ResourceSet {
   }
 
   pub fn path_display(&self, root_ref: &Option<DirEntry>) -> String {
-      to_relative_path(&self.parent, root_ref)
+    to_relative_path(&self.parent, root_ref)
+  }
+
+  pub fn full_path_string(&self) -> String {
+    path_to_string(&self.parent.path())
   }
 
   pub fn smart_size(&self) -> String {
@@ -133,7 +195,7 @@ impl ResourceSet {
       }
     }
     let files_word = if self.count() == 1 { "file" } else { "files" };
-    cprintln!("<blue>{: >8}</blue> {}\t{: >10}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.smart_size(), self.path_display(root_ref));
+    cprintln!("<cyan>{: >8}</cyan> {}\t{: >10}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.smart_size(), self.path_display(root_ref));
   }
 
 }
@@ -179,11 +241,24 @@ impl ResourceTree {
     }
   }
 
-  pub fn curr_sub_dir(&mut self) -> Option<Box<&mut ResourceSet>> {
+ /*  pub fn curr_sub_dir(&mut self) -> Option<Box<&mut ResourceSet>> {
     if self.directories.len() > 1 {
       let last_opt = self.directories.last_mut();    
        if last_opt.is_some() {
         Some(Box::new(last_opt.unwrap().as_mut()))
+       } else {
+        None
+       }
+    } else {
+      None
+    }
+  } */
+
+   pub fn matched_sub_dir(&mut self, row: &ResourceRow) -> Option<Box<&mut ResourceSet>> {
+    if self.directories.len() > 1 {
+      let matched_opt = self.directories.iter_mut().find(|rs| rs.full_path_string() == row.directory_path_string());
+       if let Some(matched_box)  = matched_opt {
+        Some(Box::new(matched_box.as_mut()))
        } else {
         None
        }
@@ -199,7 +274,7 @@ impl ResourceTree {
   }
 
    pub fn add_to_sub(&mut self, row: &ResourceRow) {
-    if let Some(curr_dir) = self.curr_sub_dir() {
+    if let Some(curr_dir) = self.matched_sub_dir(row) {
       let _ = &curr_dir.push(row);
     }
   }
@@ -292,22 +367,26 @@ impl ResourceTree {
   pub fn show_extension_stats(&self) {
     for row in self.build_extension_map().into_iter() {
       let file_word = if row.count == 1 { "file" } else { "files "};
-      cprintln!("<yellow>{: >10}</yellow>\t<blue>{: >9}</blue> {}\t{}", row.key, row.count, file_word, smart_size(row.size));
+      cprintln!("<yellow>{: >10}</yellow>\t<cyan>{: >9}</cyan> {}\t{}", row.key, row.count, file_word, smart_size(row.size));
     }
   }
 
-  pub fn show(&self, show_files: bool) {
+  pub fn show(&self, details: DetailLevel) {
     for directory in &self.directories {
       if self.parent.is_some() {
         if directory.as_ref().depth() < self.max_depth {
-          directory.as_ref().show(&self.parent, show_files);
+          if details.show_void_directories || directory.count() > 0 {
+            directory.as_ref().show(&self.parent, details.show_files);
+          }
         }
       }
     }
-    self.show_extension_stats();
+    if details.show_extension_groups {
+      self.show_extension_stats();
+    }
     cprintln!("{: <10} <yellow>{}</yellow>", "path", self.path_display());
     cprintln!("{: <10} <green>{}</green>", "total", self.num_files());
-    cprintln!("{: <10} <blue>{}</blue>", "size", self.smart_size());
+    cprintln!("{: <10} <cyan>{}</cyan>", "size", self.smart_size());
     cprintln!("{: <10} {}", "max depth", self.max_depth);
   }
 

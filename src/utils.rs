@@ -1,4 +1,5 @@
 use walkdir::{DirEntry};
+use std::path::{Path};
 use std::time::UNIX_EPOCH;
 use size::Size;
 
@@ -29,7 +30,11 @@ pub fn extract_extension(file: &DirEntry) -> String {
 }
 
 pub fn extract_extensions<'a>(ext_list: &str) -> Vec<String> {
-  if ext_list.clone().len() > 2 { ext_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
+  extract_from_list(ext_list)
+}
+
+pub fn extract_from_list<'a>(str_list: &str) -> Vec<String> {
+  if str_list.clone().len() > 2 { str_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
 }
 
 pub fn extract_move_target(move_opt: Option<String>) -> (String, bool) {
@@ -49,11 +54,13 @@ pub fn extract_timestamp(file: &DirEntry) -> u64 {
     ts
 }
 
-pub fn build_action_text(delete_mode: bool, move_mode: bool, move_target: &str) -> String {
+pub fn build_action_text(delete_mode: bool, move_mode: bool, move_target: &Option<String>) -> String {
   let mut action_parts: Vec<&str> = vec![];
   if move_mode {
       action_parts.push("move to");
-      action_parts.push(move_target);
+      if let Some(tg) = move_target {
+        action_parts.push(tg.as_str());
+      }
   } else if delete_mode { 
       action_parts.push("delete");
   } else {
@@ -201,7 +208,7 @@ pub fn size_display(size: u64, prefix: &str) -> String {
     if size > 0 { format!("{} {}", prefix, smart_size(size)) } else { "".to_string() }
 }
 
-pub fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
+pub fn to_relative_parts(current: &DirEntry, root: &Option<DirEntry>) -> Vec<String> {
     if let Some(root_ref) = root {
         let root_comps = root_ref.path().components().into_iter().collect::<Vec<_>>();
         let num_root_parts = root_comps.len();
@@ -214,10 +221,33 @@ pub fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
                 parts.push(item_str.to_string());
             }
         }
+        parts.to_owned()
+    } else {
+        vec![]
+    }
+}
+
+pub fn path_to_string(ref_path: &Path) -> String {
+  let parts = ref_path.components().into_iter().map(|c| c.as_os_str().to_str().unwrap_or("")).collect::<Vec<_>>();
+  parts.join("/")
+}
+
+pub fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
+  let parts = to_relative_parts(current, root);
+    if parts.len() > 0 {
         parts.join("/").to_owned()
     } else {
         current.path().to_str().unwrap_or("").to_string()
     }
+}
+
+pub fn is_not_excluded_dir(resource: &DirEntry, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
+  if e_dirs.len() > 0 {
+    let dirs = to_relative_parts(resource, root_ref);
+    dirs.into_iter().any(|d| e_dirs.contains(&d)) == false
+  } else {
+    true
+  }
 }
 
 pub fn extract_day_ref_pairs(days: f64) -> (f64, String) {
