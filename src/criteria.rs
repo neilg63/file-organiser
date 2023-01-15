@@ -105,12 +105,12 @@ impl Criteria {
     self.max_size() > self.min_size()
   }
 
-  pub fn show_prompt(&self) -> bool {
+/*   pub fn show_prompt(&self) -> bool {
     match self.action {
       ActionMode::Delete => true,
       _ => false,
     }
-  }
+  } */
 
   pub fn has_size_limits(&self) -> bool {
     self.min_size() > 0 || self.has_max_size()

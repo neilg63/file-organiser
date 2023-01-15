@@ -1,8 +1,6 @@
 extern crate chrono;
 // use std::rc::Rc;
 use std::io::Write;
-use walkdir::{WalkDir, DirEntry};
-//use clap::{Parser, command, Arg, ArgAction};
 use clap::{Parser};
 use args::Args;
 use color_print::cprintln;
@@ -13,47 +11,13 @@ mod utils;
 mod path_info;
 mod criteria;
 mod matches;
+mod run;
 
 use crate::path_info::PathInfo;
 use crate::resource_row::*;
 use crate::criteria::*;
 use crate::matches::*;
-
-
-pub fn scan_directory(path_str:String, details: DetailLevel, criteria: &Criteria, delete_confirmed: bool) {
-    let mut root_ref:Option<DirEntry> = None;
-    let mut resource_tree: ResourceTree = ResourceTree::new(criteria.max_depth);
-    let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(criteria.max_depth as usize).follow_links(true);
-    for file in target_dir.into_iter().filter_map(|file| file.ok()) {
-        let ft = file.file_type();
-        let mut not_excluded = true;
-        if ft.is_dir() {
-            if root_ref.is_none() {
-                root_ref = Some(file.clone());
-                resource_tree.add_root(&file);
-            }
-            let r_set = ResourceSet::new(&file);
-            if ft.is_dir() && root_ref.is_some() {
-               not_excluded = r_set.is_not_excluded_dir(&criteria.exclude_directories, &root_ref);
-            }
-            if not_excluded {
-                resource_tree.push(&r_set);
-            }
-        } else {
-            let resource = ResourceRow::new(&file);
-            if resource.matches_criteria(&criteria) {
-                if resource.depth() < 2 {
-                    resource_tree.add_to_parent(&resource);
-                }  else {
-                    if resource.is_not_in_excluded_dir(&criteria.exclude_directories, &root_ref) { 
-                        resource_tree.add_to_sub(&resource);
-                    }
-                }
-            }
-        }
-    }
-    resource_tree.show(details);
-}
+use crate::run::*;
 
 pub fn action_prompt(text: &str) -> bool {
     let mut line = String::new();
@@ -74,24 +38,25 @@ fn main() {
 
     if path_info.exists {
         let details = DetailLevel::new(&args.list, &args.groups, &args.void);
-        scan_directory(path_info.canonical, details, &criteria, false);
+        let resource_tree = scan_directory(&path_info.canonical, &details, &criteria, false);
         criteria.show();
+        
         if criteria.delete_with_prompt() {
-            if action_prompt("Are you sure you want to delete the above files?") {
-                cprintln!("<green>OK</green>");
+            let num_matched_files = resource_tree.num_files();
+            if num_matched_files > 0 {
+                let file_word = if num_matched_files == 1 { "file" } else { "files "};
+                if action_prompt(format!("Are you sure you want to delete the {} above {}?", num_matched_files, file_word).as_str()) {
+                scan_directory(&path_info.canonical, &details, &criteria, true);
+                    cprintln!("<green>deleted</green>");
+                } else {
+                    cprintln!("<red>Not deleted</red>");
+                }
             } else {
-                cprintln!("<red>Not OK</red>");
+                cprintln!("<red>No matched files to delete</red>");
             }
         }
     } else {
-       cprintln!("<red>The target directory {}</red> does not exist", path_info.input); 
-    }
-    
-    
-
-    if criteria.has_pattern() {
-        let source_str = "long-123.build.jpeg";
-        println!("{:?}", match_string_simple(source_str.to_owned(), &criteria.pattern.unwrap() ) );
+       cprintln!("The target directory <red>{}</red> does not exist", path_info.input); 
     }
     
 }

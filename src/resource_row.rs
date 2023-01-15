@@ -28,9 +28,11 @@ impl DetailLevel {
 
 #[derive(Debug, Clone)]
 pub struct ResourceRow {
-    file: DirEntry,
-    extension: String,
-    ts: u64,
+    pub file: DirEntry,
+    pub extension: String,
+    pub ts: u64,
+    pub move_target: Option<String>,
+    pub deleted: bool,
 }
 
 impl ResourceRow {
@@ -38,8 +40,18 @@ impl ResourceRow {
         ResourceRow { 
             file: file.to_owned(), 
             extension: extract_extension(file),
-            ts: extract_timestamp(file)
+            ts: extract_timestamp(file),
+            move_target: None,
+            deleted: false,
          }
+    }
+
+    pub fn set_move_target(&mut self, target: &str) {
+      self.move_target = Some(target.to_owned());
+    }
+
+    pub fn set_deleted(&mut self) {
+      self.deleted = true;
     }
 
     pub fn seconds_old(&self) -> u64 {
@@ -50,8 +62,8 @@ impl ResourceRow {
         self.seconds_old() as f64 / 86400f64
     }
 
-    pub fn has_valid_extension(&self, extensions: &Vec<String>) -> bool {
-        is_in_extensions(&self.extension, extensions)
+    pub fn has_valid_extension(&self, extensions: &Vec<String>, exclusions: &Vec<String>) -> bool {
+        is_in_extensions(&self.extension, extensions) && is_not_in_extensions(&self.extension, exclusions)
     }
 
     pub fn is_not_in_excluded_dir(&self, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
@@ -97,11 +109,7 @@ impl ResourceRow {
     }
 
     pub fn matches_criteria(&self, criteria: &Criteria) -> bool {
-        self.is_in_day_range(criteria.age, criteria.newer) && self.is_in_size_range(&criteria.sizes) && self.has_valid_extension(&criteria.include_extensions) && self.matches(&criteria.pattern, MatchBounds::Open, criteria.match_mode)
-    }
-
-    pub fn is_ranges(&self, target_days: f64, is_after: bool, sizes: &(u64, u64), extensions: &Vec<String>) -> bool {
-        self.is_in_day_range(target_days, is_after) && self.is_in_size_range(&sizes) && self.has_valid_extension(&extensions)
+        self.is_in_day_range(criteria.age, criteria.newer) && self.is_in_size_range(&criteria.sizes) && self.has_valid_extension(&criteria.include_extensions, &criteria.exclude_extensions) && self.matches(&criteria.pattern, MatchBounds::Open, criteria.match_mode)
     }
 
     pub fn day_display(&self) -> String {
@@ -110,6 +118,14 @@ impl ResourceRow {
 
     pub fn file_display(&self, root_ref: &Option<DirEntry>) -> String {
         to_relative_path(&self.file, root_ref)
+    }
+
+    pub fn relative_path(&self, root_ref: &Option<DirEntry>) -> String {
+      self.file_display(root_ref)
+    }
+
+    pub fn relative_parent_path(&self, root_ref: &Option<DirEntry>) -> String {
+      path_to_relative_path(&self.file.path().parent().unwrap(), root_ref)
     }
 
     pub fn directory_path_string(&self) -> String {
@@ -371,7 +387,7 @@ impl ResourceTree {
     }
   }
 
-  pub fn show(&self, details: DetailLevel) {
+  pub fn show(&self, details: &DetailLevel) {
     for directory in &self.directories {
       if self.parent.is_some() {
         if directory.as_ref().depth() < self.max_depth {

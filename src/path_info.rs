@@ -3,6 +3,7 @@ use std::env;
 use crate::args::Args;
 use crate::utils::is_full_path;
 
+#[derive(Debug, Clone)]
 pub struct PathInfo {
   pub path: Box<PathBuf>,
   pub canonical: String,

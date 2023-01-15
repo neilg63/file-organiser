@@ -26,23 +26,3 @@ pub fn match_string(source: String, pattern: &String, case_insensitive: bool, bo
   let re = Regex::new(corrected_pattern.as_str()).unwrap();
   re.is_match(source.as_str())
 }
-
-pub fn match_string_simple(source: String, pattern: &String) -> bool {
-  match_string(source, pattern, false, MatchBounds::Open, MatchMode::Simple)
-}
-
-pub fn match_string_sensitive(source: String, pattern: &String) -> bool {
-  match_string(source, pattern, true, MatchBounds::Open, MatchMode::Simple)
-}
-
-pub fn match_string_advanced(source: String, pattern: &String, case_insensitive: bool) -> bool {
-  match_string(source, pattern, case_insensitive, MatchBounds::Open, MatchMode::Regex)
-}
-
-pub fn starts_with_simple(source: String, pattern: &String, case_insensitive: bool) -> bool {
-  match_string(source, pattern, case_insensitive, MatchBounds::Start, MatchMode::Simple)
-}
-
-pub fn starts_with_advanced(source: String, pattern: &String, case_insensitive: bool) -> bool {
-  match_string(source, pattern, case_insensitive, MatchBounds::Start, MatchMode::Regex)
-}

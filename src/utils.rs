@@ -34,7 +34,7 @@ pub fn extract_extensions<'a>(ext_list: &str) -> Vec<String> {
 }
 
 pub fn extract_from_list<'a>(str_list: &str) -> Vec<String> {
-  if str_list.clone().len() > 2 { str_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
+  if str_list.clone().len() > 0 { str_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
 }
 
 pub fn extract_move_target(move_opt: Option<String>) -> (String, bool) {
@@ -71,10 +71,18 @@ pub fn build_action_text(delete_mode: bool, move_mode: bool, move_target: &Optio
 
 pub fn is_in_extensions(ext: &String, extensions: &Vec<String>) -> bool {
     if extensions.len() > 0 {
-        extensions.iter().any(|s| s == ext)
+        extensions.iter().any(|e| matches_empty_extension_ref(e, ext))
     } else {
         true
     }
+}
+
+pub fn is_not_in_extensions(ext: &String, extensions: &Vec<String>) -> bool {
+    extensions.iter().any(|e| matches_empty_extension_ref(e, ext)) == false
+}
+
+fn matches_empty_extension_ref(match_ext: &String, file_ext: &String) -> bool {
+  match_ext == file_ext || (match_ext == "_" && file_ext == "")
 }
 
 pub fn numeric_string_to_f64(num_chars: &Vec<char>) -> f64 {
@@ -209,11 +217,15 @@ pub fn size_display(size: u64, prefix: &str) -> String {
 }
 
 pub fn to_relative_parts(current: &DirEntry, root: &Option<DirEntry>) -> Vec<String> {
+  path_to_relative_parts(current.path(), root)
+}
+
+pub fn path_to_relative_parts(current_path: &Path, root: &Option<DirEntry>) -> Vec<String> {
     if let Some(root_ref) = root {
         let root_comps = root_ref.path().components().into_iter().collect::<Vec<_>>();
         let num_root_parts = root_comps.len();
         let mut parts: Vec<String> = vec![];
-        for (ci, item) in current.path().components().into_iter().enumerate() {
+        for (ci, item) in current_path.components().into_iter().enumerate() {
             let item_str = item.as_os_str().to_str().unwrap_or("");
             let par_ref = if ci < num_root_parts { root_comps.get(ci) } else { None };
             let is_root_part = par_ref.is_some() && par_ref.unwrap().as_os_str().to_str().unwrap_or("") == item_str;
@@ -233,11 +245,15 @@ pub fn path_to_string(ref_path: &Path) -> String {
 }
 
 pub fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
-  let parts = to_relative_parts(current, root);
+  path_to_relative_path(current.path(), root)
+}
+
+pub fn path_to_relative_path(current_path: &Path, root: &Option<DirEntry>) -> String {
+  let parts = path_to_relative_parts(current_path, root);
     if parts.len() > 0 {
         parts.join("/").to_owned()
     } else {
-        current.path().to_str().unwrap_or("").to_string()
+        current_path.to_str().unwrap_or("").to_string()
     }
 }
 
@@ -305,3 +321,4 @@ pub fn days_age_display(days: f64, is_after: bool) -> String {
         "All ages".to_owned()
     }
 }
+
