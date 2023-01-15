@@ -1,6 +1,6 @@
 use crate::utils::*;
 use walkdir::{DirEntry};
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use color_print::cprintln;
 extern crate chrono;
 use chrono::prelude::*;
@@ -132,9 +132,9 @@ impl ResourceRow {
       path_to_relative_path(&self.file.path().parent().unwrap(), root_ref)
     }
 
-    pub fn relative_parts(&self, root_ref: &Option<DirEntry>) -> Vec<String> {
+/*     pub fn relative_parts(&self, root_ref: &Option<DirEntry>) -> Vec<String> {
         to_relative_parts(&self.file, root_ref)
-    }
+    } */
 
     pub fn directory_path_string(&self) -> String {
       if let Some(parent_dir) = &self.file.path().parent() {

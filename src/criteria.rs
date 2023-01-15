@@ -1,5 +1,6 @@
 use crate::args::Args;
 use crate::utils::*;
+use crate::matches::MatchBounds;
 use color_print::cprintln;
 
 #[derive(Debug, Copy, Clone)]
@@ -24,6 +25,7 @@ pub struct Criteria {
   pub pattern: Option<String>,
   pub exclude_pattern: Option<String>,
   pub match_mode: MatchMode,
+  pub bounds: MatchBounds,
   pub max_depth: u8,
   pub age: f64,
   pub newer: bool,
@@ -53,7 +55,13 @@ impl Criteria {
     let (move_target, move_mode) = extract_move_target(args.r#move.clone());
     let target = if move_mode { Some(move_target) } else { None };
 
-    let pattern = if args.pattern.len() > 0 { Some(args.pattern.clone()) } else { None };
+    let has_start_pattern = args.starts_with.len() > 0;
+    let has_end_pattern = !has_start_pattern && args.ends_with.len() > 0;
+    let pattern_str = if has_start_pattern { args.starts_with.clone() } else if has_end_pattern { args.ends_with.clone() } else { args.pattern.clone() };
+
+    let pattern = if pattern_str.len() > 0 { Some(pattern_str.clone()) } else { None };
+
+    let bounds = if has_start_pattern { MatchBounds::Start } else if has_end_pattern { MatchBounds::End } else { MatchBounds::Open };
 
     let exclude_pattern = if args.exclude_pattern.len() > 0 { Some(args.exclude_pattern.clone()) } else { None };
     
@@ -72,6 +80,7 @@ impl Criteria {
 
     let match_mode = if args.regex_mode { MatchMode::Simple } else { MatchMode::Regex };
     let show_hidden = args.hidden;
+    
     Criteria { 
       sizes,
       include_extensions,
@@ -80,6 +89,7 @@ impl Criteria {
       pattern,
       exclude_pattern,
       match_mode,
+      bounds,
       max_depth,
       age: target_days,
       newer: is_after,

@@ -38,6 +38,9 @@ pub struct Args {
   #[clap(long, value_parser, default_value_t = empty_string()) ]
   pub starts_with: String,
 
+  #[clap(long, value_parser, default_value_t = empty_string()) ]
+  pub ends_with: String,
+
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub size: String,
 

@@ -16,7 +16,6 @@ mod run;
 use crate::path_info::PathInfo;
 use crate::resource_row::*;
 use crate::criteria::*;
-use crate::matches::*;
 use crate::run::*;
 
 pub fn action_prompt(text: &str) -> bool {

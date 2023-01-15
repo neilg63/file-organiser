@@ -295,7 +295,7 @@ pub fn smart_dec_format(num: f64) -> String {
   if num_parts.len() > 1 {
     let second = num_parts.get(1).unwrap().chars().rev().into_iter();
     let mut is_zero = true;
-    for (index, digit) in second.enumerate() {
+    for (_index, digit) in second.enumerate() {
       if digit != '0' && is_zero {
         dec_chars.push(digit);
         is_zero = false;
