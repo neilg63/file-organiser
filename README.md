@@ -19,8 +19,8 @@ Should you wish to delete these files, add a remove flag
 
 ## Arguments
 
-- --before, -b only files modified before the specified number of days ago, --before 30 older than 30 days
-- --after, -a only files modified after the specified number of days ago, --newer 30 newer than 30 days
+- --before, -b only files modified before the specified number of days ago, `--before 30` _older than 30 days_. For other periods, you may use the suffixes `s` for seconds, `m` for minutes, `h` for hours, `w` for weeks or `y` for years, e.g. `5m` _5 minutes_
+- --after, -a only files modified after the specified number of days ago, `--newer 30` _newer than 30 days_
 - --size, -s file size range with k (KB), m (MB) or g (GB) unit suffixes. e.g. 1-2M = 1MB to 2MB. One size alone is assumed to be the minimum. To set only a maximum prefix with a comma ( ,5MB) or use a 0-5M range.
 - --ext, -e extensions, omit to allow all extensions
 - --not_ext, -n extensions to be excluded, e.g. move or delete all files that do not include these extensions
@@ -39,4 +39,4 @@ Should you wish to delete these files, add a remove flag
 - checkout out repository and change into the repository directory
 - Run `cargo build --release`
 - The executable will be at `target/release/smartmove`
-- Add an alias to the file or move it to a directory within
+- Add an alias to the file or ideally move it into a directory already in your system export path. On Linx and Mac, this may be /usr/local/bin.
