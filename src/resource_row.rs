@@ -157,7 +157,7 @@ impl ResourceRow {
     }
 
     pub fn show(&self, root_ref: &Option<DirEntry>) {
-        cprintln!("{}\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t<yellow>{}</yellow>", self.age_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), self.file_display(root_ref));
+        cprintln!("{: >9}\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t<yellow>{}</yellow>", self.age_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), self.file_display(root_ref));
     }
 
 }
@@ -390,7 +390,7 @@ impl ResourceTree {
 
   pub fn show_extension_stats(&self) {
     for row in self.build_extension_map().into_iter() {
-      let file_word = if row.count == 1 { "file" } else { "files "};
+      let file_word = pluralize_64("file", "s", row.count as u64);
       cprintln!("<yellow>{: >10}</yellow>\t<cyan>{: >9}</cyan> {}\t{}", row.key, row.count, file_word, smart_size(row.size));
     }
   }

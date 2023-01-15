@@ -338,7 +338,7 @@ pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   let secs_per_hour = 3600;
   let secs_per_day = secs_per_hour * 24;
   let has_days = seconds >= secs_per_day;
-  let show_hours = seconds > secs_per_day * 3;
+  let show_hours = seconds < secs_per_day * 3;
   let has_hours = seconds >= secs_per_hour;
   let show_minutes = seconds < secs_per_hour * 6;
   let has_minutes = seconds >= 60;
@@ -347,7 +347,7 @@ pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
     let days = seconds as f64 / secs_per_day as f64;
     if show_hours {
       let hours = (days % 1f64) * 24f64;
-      format!("{:.0} {} {:.0} {}", days, pluralize_64("day", "s", days as u64), hours, pluralize_64("day", "s", hours as u64))
+      format!("{:.0} {} {:.0}{}", days, pluralize_64("day", "s", days as u64), hours, "h")
     } else {
       format!("{:.0} {}", days, pluralize_64("day", "s", days as u64))
     }
