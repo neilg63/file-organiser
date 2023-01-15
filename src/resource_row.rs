@@ -112,8 +112,12 @@ impl ResourceRow {
         self.is_in_day_range(criteria.age, criteria.newer) && self.is_in_size_range(&criteria.sizes) && self.has_valid_extension(&criteria.include_extensions, &criteria.exclude_extensions) && self.matches(&criteria.pattern, MatchBounds::Open, criteria.match_mode)
     }
 
-    pub fn day_display(&self) -> String {
+/*     pub fn day_display(&self) -> String {
         format!("{: >9}", format!("{:.2}", self.days_old()))
+    } */
+
+    pub fn age_display(&self) -> String {
+        seconds_to_day_hours_min_secs(self.seconds_old())
     }
 
     pub fn file_display(&self, root_ref: &Option<DirEntry>) -> String {
@@ -126,6 +130,10 @@ impl ResourceRow {
 
     pub fn relative_parent_path(&self, root_ref: &Option<DirEntry>) -> String {
       path_to_relative_path(&self.file.path().parent().unwrap(), root_ref)
+    }
+
+    pub fn relative_parts(&self, root_ref: &Option<DirEntry>) -> Vec<String> {
+        to_relative_parts(&self.file, root_ref)
     }
 
     pub fn directory_path_string(&self) -> String {
@@ -149,7 +157,7 @@ impl ResourceRow {
     }
 
     pub fn show(&self, root_ref: &Option<DirEntry>) {
-        cprintln!("{} days\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t<yellow>{}</yellow>", self.day_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), self.file_display(root_ref));
+        cprintln!("{}\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t<yellow>{}</yellow>", self.age_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), self.file_display(root_ref));
     }
 
 }

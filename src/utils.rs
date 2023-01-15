@@ -322,3 +322,51 @@ pub fn days_age_display(days: f64, is_after: bool) -> String {
     }
 }
 
+pub fn pluralize_64(single_form: &str, plural_form: &str, count: u64) -> String {
+  if count == 1 {
+    single_form.to_owned()
+  } else {
+    if plural_form == "s" || plural_form == "es" && plural_form.len() < single_form.len() {
+      format!("{}{}", single_form, plural_form)
+    } else {
+      plural_form.to_owned()
+    }
+  }
+}
+
+pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
+  let secs_per_hour = 3600;
+  let secs_per_day = secs_per_hour * 24;
+  let has_days = seconds >= secs_per_day;
+  let show_hours = seconds > secs_per_day * 3;
+  let has_hours = seconds >= secs_per_hour;
+  let show_minutes = seconds < secs_per_hour * 6;
+  let has_minutes = seconds >= 60;
+  let show_seconds = seconds < 60 * 5;
+  if has_days {
+    let days = seconds as f64 / secs_per_day as f64;
+    if show_hours {
+      let hours = (days % 1f64) * 24f64;
+      format!("{:.0} {} {:.0} {}", days, pluralize_64("day", "s", days as u64), hours, pluralize_64("day", "s", hours as u64))
+    } else {
+      format!("{:.0} {}", days, pluralize_64("day", "s", days as u64))
+    }
+  } else if has_hours {
+    let hours = seconds as f64 / secs_per_hour as f64;
+    if show_minutes {
+      let minutes = (hours % 1f64) * 60f64;
+      format!("{:.0}{} {:.0}{}", hours, "h", minutes, "m")
+    } else {
+      format!("{:.0}{}", hours, "h")
+    }
+  } else if has_minutes {
+    let minutes = seconds as f64 / 60.0;
+    if show_seconds {
+      format!("{:.0}{} {:.0}{}", minutes, "m", seconds, "s")
+    } else {
+      format!("{:.0}{}", minutes, "m")
+    }
+  } else {
+    format!("{:.0}{}", seconds, "s")
+  }
+}
