@@ -40,4 +40,4 @@ Should you wish to delete these files, add a remove flag
 - checkout out repository and change into the repository directory
 - Run `cargo build --release`
 - The executable will be at `target/release/smartmove`
-- Add an alias to the file or ideally move it into a directory already in your system export path. On Linux and Mac, this may be `/usr/local/bin`.
+- Add an alias to the file or ideally move it into a directory already in your system's export path. On Linux and Mac, this may be `/usr/local/bin`.
