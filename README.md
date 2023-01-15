@@ -32,6 +32,7 @@ Should you wish to delete these files, add a remove flag
 - --move, -m Move to specified new target directory
 - --delete, -u Delete files filtered by the above criteria
 - --force, -f Bypass prompt for bulk deletion (useful for cron jobs)
+- --hidden, -c Match hidden files and directories, e.g. `.git` as folder or `.gitignore` as a file
 
 ## Installation
 

@@ -37,7 +37,7 @@ pub fn scan_directory(path_str: &String, details: &DetailLevel, criteria: &Crite
             }
         } else {
             let mut resource = ResourceRow::new(&file);
-            if resource.matches_criteria(&criteria) {
+            if resource.matches_criteria(&criteria, &root_ref) {
                 if resource.depth() < 2 {
                     resource_tree.add_to_parent(&resource);
                 }  else {

@@ -108,10 +108,17 @@ impl ResourceRow {
         (is_after && self.days_old() <= target_days) || (!is_after && self.days_old() >= target_days)
     }
 
-    pub fn matches_criteria(&self, criteria: &Criteria) -> bool {
-        self.is_in_day_range(criteria.age, criteria.newer) && self.is_in_size_range(&criteria.sizes) && self.has_valid_extension(&criteria.include_extensions, &criteria.exclude_extensions) && self.matches(&criteria.pattern, MatchBounds::Open, criteria.match_mode)
+    pub fn matches_criteria(&self, criteria: &Criteria, root_ref: &Option<DirEntry>) -> bool {
+        self.is_in_day_range(criteria.age, criteria.newer) 
+        && self.is_in_size_range(&criteria.sizes)
+        && self.has_valid_extension(&criteria.include_extensions, &criteria.exclude_extensions)
+        && self.matches(&criteria.pattern, MatchBounds::Open, criteria.match_mode)
+        && self.show_if_hidden(criteria.show_hidden, root_ref)
     }
 
+    pub fn show_if_hidden(&self, show_hidden: bool, root_ref: &Option<DirEntry>) -> bool {
+      show_hidden || (self.file_name().starts_with(".") || self.relative_parts(root_ref).into_iter().any(|s| s.starts_with("."))) == false
+    }
 /*     pub fn day_display(&self) -> String {
         format!("{: >9}", format!("{:.2}", self.days_old()))
     } */
@@ -132,9 +139,9 @@ impl ResourceRow {
       path_to_relative_path(&self.file.path().parent().unwrap(), root_ref)
     }
 
-/*     pub fn relative_parts(&self, root_ref: &Option<DirEntry>) -> Vec<String> {
+    pub fn relative_parts(&self, root_ref: &Option<DirEntry>) -> Vec<String> {
         to_relative_parts(&self.file, root_ref)
-    } */
+    } 
 
     pub fn directory_path_string(&self) -> String {
       if let Some(parent_dir) = &self.file.path().parent() {
