@@ -31,7 +31,7 @@ Should you wish to delete these files, add a remove flag
 - --pattern, -p Match pattern for the file name
 - --starts-with Match pattern from the start of the file name
 - --ends-with Match pattern from the end of the file name, with or without the extension
-- --regex-mode, -x Flag to interpret the above pattern as a full regular express, e.g. `a*` means any number of the preceding character in full regex mode, but is otherwise a wildcard for any characters, which in full regex mode is `.*`. For simple pattern matches `.` is interpreted literally, while in full regex mode it means any character and must be escaped to match a dot.
+- --regex-mode, -x Flag to interpret the above pattern as a full regular express, e.g. `a*` means any number of the preceding character in full regex mode, but otherwise a wildcard for `a` followewd by any characters, which in full regex mode is `a.*`. For simple pattern matches `.` is interpreted literally, while in full regex mode it means any character and must be escaped to match a dot.
 - --move, -m Move to specified new target directory
 - --delete, -u Delete files filtered by the above criteria
 - --force, -f Bypass prompt for bulk deletion (useful for cron jobs)
