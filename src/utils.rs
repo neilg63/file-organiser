@@ -362,7 +362,8 @@ pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   } else if has_minutes {
     let minutes = seconds as f64 / 60.0;
     if show_seconds {
-      format!("{:.0}{} {:.0}{}", minutes, "m", seconds, "s")
+      let secs = seconds % 60;
+      format!("{:.0}{} {:.0}{}", minutes, "m", secs, "s")
     } else {
       format!("{:.0}{}", minutes, "m")
     }

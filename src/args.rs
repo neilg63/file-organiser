@@ -32,8 +32,8 @@ pub struct Args {
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub pattern: String,
 
-  #[clap(short = 'y', long, value_parser, default_value_t = empty_string()) ]
-  pub exclude_pattern: String,
+  #[clap(short = 'o', long, value_parser, default_value_t = empty_string()) ]
+  pub omit_pattern: String,
 
   #[clap(long, value_parser, default_value_t = empty_string()) ]
   pub starts_with: String,

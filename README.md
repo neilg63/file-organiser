@@ -6,15 +6,19 @@ It does not seek to replace common utilities such as _ls_, _find_ and _exa_ comb
 NB: This is currently under development in its alpha and should be used with caution. I have now added the move and delete functionaliy, but still need to improved feedback and test on different file systems and operating systems. The application leverages contributed packages which are all cross-platform and should work on recent versions of Linux, Mac and Windows.
 
 The following command will give you and overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days
+
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30`
 
 The -l flag reveals individual file entries with their age, date, type, and relative path.
+
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l`
 
 Should you wish to move these files to a target directory, respecting the original nested file structure, add a --move flag.
+
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --move /extended-drive/media`
 
 Should you wish to delete these files, add a remove flag
+
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --delete`
 
 ## Arguments
@@ -29,6 +33,7 @@ Should you wish to delete these files, add a remove flag
 - --groups, -g Flag to show stats by extension groups before the main overview
 - --max-depth, -d Max depth of subdirectories to scan. Defaults to 255 (pratcically unlimited).
 - --pattern, -p Match pattern for the file name
+- --omit-pattern, -o Omit file names matching this pattern
 - --starts-with Match pattern from the start of the file name
 - --ends-with Match pattern from the end of the file name, with or without the extension
 - --regex-mode, -x Flag to interpret the above pattern as a full regular express, e.g. `a*` means any number of the preceding character in full regex mode, but otherwise a wildcard for `a` followewd by any characters, which in full regex mode is `a.*`. For simple pattern matches `.` is interpreted literally, while in full regex mode it means any character and must be escaped to match a dot.

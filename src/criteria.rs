@@ -58,12 +58,12 @@ impl Criteria {
     let has_start_pattern = args.starts_with.len() > 0;
     let has_end_pattern = !has_start_pattern && args.ends_with.len() > 0;
     let pattern_str = if has_start_pattern { args.starts_with.clone() } else if has_end_pattern { args.ends_with.clone() } else { args.pattern.clone() };
-
+    
     let pattern = if pattern_str.len() > 0 { Some(pattern_str.clone()) } else { None };
 
     let bounds = if has_start_pattern { MatchBounds::Start } else if has_end_pattern { MatchBounds::End } else { MatchBounds::Open };
-
-    let exclude_pattern = if args.exclude_pattern.len() > 0 { Some(args.exclude_pattern.clone()) } else { None };
+    
+    let exclude_pattern = if args.omit_pattern.len() > 0 { Some(args.omit_pattern.clone()) } else { None };
     
     let delete_mode = !move_mode && args.delete;
 
@@ -109,6 +109,10 @@ impl Criteria {
 
   pub fn has_pattern(&self) -> bool {
     self.pattern.is_some()
+  }
+
+  pub fn has_omit_pattern(&self) -> bool {
+    self.exclude_pattern.is_some()
   }
 
   pub fn has_max_size(&self) -> bool {

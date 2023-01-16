@@ -112,7 +112,8 @@ impl ResourceRow {
         self.is_in_day_range(criteria.age, criteria.newer) 
         && self.is_in_size_range(&criteria.sizes)
         && self.has_valid_extension(&criteria.include_extensions, &criteria.exclude_extensions)
-        && self.matches(&criteria.pattern, MatchBounds::Open, criteria.match_mode)
+        && (!criteria.has_pattern() || self.matches(&criteria.pattern, criteria.bounds, criteria.match_mode))
+        && (!criteria.has_omit_pattern() || self.matches(&criteria.exclude_pattern, criteria.bounds, criteria.match_mode) == false)
         && self.show_if_hidden(criteria.show_hidden, root_ref)
     }
 
