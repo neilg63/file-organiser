@@ -3,19 +3,19 @@
 Smartmove is a command line tool that lists, moves or deletes large numbers of files filtered by age, file extension and/or size range.
 It does not seek to replace common utilities such as _ls_, _find_ and _exa_ combined with _mv_ and _rm_, but provides a more transparent streamlined workflow when managing large volumes of files.
 
-NB: This is currently under development in its alpha and should be used with caution. I have now added the move and delete functionaliy, but still need to manage hidden files and test on different file systems.
+NB: This is currently under development in its alpha and should be used with caution. I have now added the move and delete functionaliy, but still need to improved feedback and test on different file systems and operating systems. The application leverages contributed packages which are all cross-platform and should work on recent versions of Linux, Mac and Windows.
 
 The following command will give you and overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days
-`smartmove -ext jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30`
+`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30`
 
 The -l flag reveals individual file entries with their age, date, type, and relative path.
-`smartmove -ext jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l`
+`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l`
 
 Should you wish to move these files to a target directory, respecting the original nested file structure, add a --move flag.
-`smartmove -ext jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --move /extended-drive/media`
+`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --move /extended-drive/media`
 
 Should you wish to delete these files, add a remove flag
-`smartmove -ext jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --delete`
+`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --delete`
 
 ## Arguments
 
