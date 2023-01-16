@@ -4,9 +4,9 @@ fn empty_string() -> String {
   "".to_string()
 }
 
-fn default_days() -> f64 {
+/* fn default_days() -> f64 {
   0f64
-}
+} */
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
