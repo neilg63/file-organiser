@@ -3,7 +3,7 @@
 Smartmove is a command line file management tool. It lets you list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range.
 It does not seek to replace common utilities such as _ls_, (_dir_) and _find_ combined with _mv_ and _rm_ (_move_ or _del_), but provides a more transparent overview and streamlined workflow when managing large volumes of files.
 
-NB: This utility is currently under development in its alpha stage and should be used with caution. I have added the _move_ and _delete_ functionaliy, but still need to improved feedback and test on different file systems and operating systems. The application leverages contributed packages which are all cross-platform and should work on recent versions of Linux, Mac and Windows.
+NB: This utility is currently under development in its alpha stage and should be used with caution. I have added the _move_ and _delete_ functionaliy, but still need to improve feedback and test on different file systems and operating systems. The application leverages contributed packages which are all cross-platform and should work on recent versions of Linux, Mac and Windows.
 
 The following command will give you and overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days
 
