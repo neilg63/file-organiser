@@ -359,7 +359,7 @@ impl ResourceTree {
         if size_val > max_val {
           max_row = Some(resource);
           max_val = size_val;
-        } else if size_val > 0 && size_val < min_val {
+        } else if size_val > 0 && (size_val < min_val || min_val < 1) {
           min_row = Some(resource);
           min_val = size_val;
         }
@@ -419,7 +419,8 @@ impl ResourceTree {
   pub fn show_extension_stats(&self) {
     for row in self.build_extension_map().into_iter() {
       let file_word = pluralize_64("file", "s", row.count as u64);
-      cprintln!("<yellow>{: >10}</yellow>\t<cyan>{: >9}</cyan> {}\t{}", row.key, row.count, file_word, smart_size(row.size));
+      let ext_text = if row.key.len() > 0 { row.key } else { "[none]".to_owned() };
+      cprintln!("<yellow>{: >10}</yellow>\t<cyan>{: >9}</cyan> {}\t{}", ext_text, row.count, file_word, smart_size(row.size));
     }
   }
 
@@ -438,18 +439,20 @@ impl ResourceTree {
     }
     let num_files = self.num_files();
     cprintln!("{: <10} <yellow>{}</yellow>", "path", self.path_display());
-    cprintln!("{: <10} <green>{}</green>", "total", num_files);
-    cprintln!("{: <10} <cyan>{}</cyan>", "size", self.smart_size());
-    if (num_files > 2) {
-      let (min_file, max_file) = self.get_min_max_files();
-      if let Some(min_resource) = min_file {
-        cprintln!("{: <10} <cyan>{}</cyan> ({})", "Smallest", min_resource.smart_size(), min_resource.relative_path(&self.parent));
+    cprintln!("{: <10} <green>{}</green>", "total #", num_files);
+    if num_files > 0 {
+      cprintln!("{: <10} <cyan>{}</cyan>", "tot. size", self.smart_size());
+      if num_files > 2 {
+        let (min_file, max_file) = self.get_min_max_files();
+        if let Some(min_resource) = min_file {
+          cprintln!("{: <10} <cyan>{}</cyan> ({})", "smallest", min_resource.smart_size(), min_resource.relative_path(&self.parent));
+        }
+        if let Some(max_resource) = max_file {
+          cprintln!("{: <10} <cyan>{}</cyan> ({})", "largest", max_resource.smart_size(), max_resource.relative_path(&self.parent));
+        }
       }
-      if let Some(max_resource) = max_file {
-        cprintln!("{: <10} <cyan>{}</cyan> ({})", "Largest", max_resource.smart_size(), max_resource.relative_path(&self.parent));
-      }
+      cprintln!("{: <10} {}", "max depth", self.max_depth);
     }
-    cprintln!("{: <10} {}", "max depth", self.max_depth);
   }
 
 }

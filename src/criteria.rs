@@ -155,11 +155,12 @@ impl Criteria {
     let min_size_display = size_display(self.min_size(), "min.");
     let max_size_display = size_display(self.max_size(), "max.");
     let has_size_constraint = self.has_size_limits();
-    let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { "All sizes".to_owned() };
+    let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { "[all]".to_owned() };
     let age_range = days_age_display(self.age, self.newer);
     cprintln!("<yellow>{: <15}</yellow>", age_range);
     cprintln!("{: >10} <cyan>{: >9}</cyan>", "size range", size_display);
-    cprintln!("{: >10} <cyan>{: >9}</cyan>", "extensions", self.include_extensions.join(", "));
+    let ext_text = if self.include_extensions.len() > 0 { self.include_extensions.join(", ") } else { "[all]".to_owned()  };
+    cprintln!("{: >10} <cyan>{: >9}</cyan>", "extensions", ext_text);
     let action_text = build_action_text(self.delete_mode(), self.move_mode(), &self.target);
     cprintln!("{} <yellow>{: <15}</yellow>", "action", action_text);
   }
