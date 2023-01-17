@@ -27,7 +27,7 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - **--after, -a** only files modified after the specified number of days ago, `--newer 30` _newer than 30 days_
 - **--size, -s** file size range with k (KB), m (MB) or g (GB) unit suffixes. e.g. 1-2M = 1MB to 2MB. One size alone is assumed to be the minimum. To set only a maximum prefix with a comma ( ,5MB) or use a 0-5M range.
 - **--ext, -e** extensions, omit to allow all extensions
-- **--not_ext, -n** extensions to be excluded, e.g. move or delete all files that do not include these extensions
+- **--not-ext, -n** extensions to be excluded, e.g. move or delete all files that do not include these extensions
 - **--exclude-dirs, -q** directories at any nesting level to be excluded
 - **--list, -l** Flag to show individual file details rather than just the overview
 - **--groups, -g** Flag to show stats by extension groups before the main overview
