@@ -348,6 +348,26 @@ impl ResourceTree {
     size
   }
 
+  pub fn get_min_max_files(&self) -> (Option<ResourceRow>, Option<ResourceRow>) {
+    let mut min_val = 0;
+    let mut max_val = 0;
+    let mut min_row: Option<ResourceRow> = None;
+    let mut max_row: Option<ResourceRow> = None;
+    for row in &self.directories {
+      for resource in row.resources.clone() {
+        let size_val = resource.size();
+        if size_val > max_val {
+          max_row = Some(resource);
+          max_val = size_val;
+        } else if size_val > 0 && size_val < min_val {
+          min_row = Some(resource);
+          min_val = size_val;
+        }
+      }
+    }
+    (min_row, max_row)
+  }
+
   pub fn num_files(&self) -> usize {
     let mut num = 0;
     for row in &self.directories {
@@ -416,9 +436,19 @@ impl ResourceTree {
     if details.show_extension_groups {
       self.show_extension_stats();
     }
+    let num_files = self.num_files();
     cprintln!("{: <10} <yellow>{}</yellow>", "path", self.path_display());
-    cprintln!("{: <10} <green>{}</green>", "total", self.num_files());
+    cprintln!("{: <10} <green>{}</green>", "total", num_files);
     cprintln!("{: <10} <cyan>{}</cyan>", "size", self.smart_size());
+    if (num_files > 2) {
+      let (min_file, max_file) = self.get_min_max_files();
+      if let Some(min_resource) = min_file {
+        cprintln!("{: <10} <cyan>{}</cyan> ({})", "Smallest", min_resource.smart_size(), min_resource.relative_path(&self.parent));
+      }
+      if let Some(max_resource) = max_file {
+        cprintln!("{: <10} <cyan>{}</cyan> ({})", "Largest", max_resource.smart_size(), max_resource.relative_path(&self.parent));
+      }
+    }
     cprintln!("{: <10} {}", "max depth", self.max_depth);
   }
 

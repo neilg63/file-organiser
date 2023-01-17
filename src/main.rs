@@ -4,6 +4,7 @@ use std::io::Write;
 use clap::{Parser};
 use args::Args;
 use color_print::cprintln;
+use utils::pluralize_64;
 
 mod args;
 mod resource_row;
@@ -43,7 +44,7 @@ fn main() {
         if criteria.delete_with_prompt() {
             let num_matched_files = resource_tree.num_files();
             if num_matched_files > 0 {
-                let file_word = if num_matched_files == 1 { "file" } else { "files "};
+                let file_word = pluralize_64("file", "s", num_matched_files as u64);
                 if action_prompt(format!("Are you sure you want to delete the {} above {}?", num_matched_files, file_word).as_str()) {
                 scan_directory(&path_info.canonical, &details, &criteria, true);
                     cprintln!("<green>deleted</green>");
