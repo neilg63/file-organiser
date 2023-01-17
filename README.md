@@ -5,11 +5,11 @@ It does not seek to replace common utilities such as _ls_, (_dir_) and _find_ co
 
 NB: This utility is currently under development in its alpha stage and should be used with caution. I have added the _move_ and _delete_ functionaliy, but still need to improve feedback and test on different file systems and operating systems. The application leverages contributed packages which are all cross-platform and should work on recent versions of Linux, Mac and Windows.
 
-The following command will give you and overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days
+The following command will give you an overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days
 
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30`
 
-The -l flag reveals individual file entries with their age, date, type, and relative path.
+The -l flag reveals individual file entries with their age, date, type and relative path.
 
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l`
 
@@ -17,7 +17,7 @@ Should you wish to move these files to a target directory, respecting the origin
 
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --move /extended-drive/media`
 
-Should you wish to delete these files, add a remove flag
+Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stands for max depth)
 
 `smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --delete`
 
