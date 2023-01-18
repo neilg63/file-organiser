@@ -458,8 +458,8 @@ impl ResourceTree {
       self.show_extension_stats();
     }
     let num_files = self.num_files();
-    cprintln!("{: <10} <yellow>{}</yellow>", "path", self.path_display());
-    cprintln!("{: <10} <green>{}</green>", "total #", num_files);
+    cprintln!("{: <12} <yellow>{}</yellow>", "path", self.path_display());
+    cprintln!("{: <12} <green>{}</green>", "total #", num_files);
     if num_files > 0 {
       let (min_file, max_file) = self.get_oldest_newest_files();
       let mut old_new_parts:Vec<String> = vec![];
@@ -470,10 +470,11 @@ impl ResourceTree {
         old_new_parts.push(cformat!("oldest: <green>{}</green> ({})",   max_resource.age_display(), max_resource.file_name()));
       }
       if old_new_parts.len() > 0 {
-        cprintln!("{: <15} {}", "age range:", old_new_parts.join(", "));
+        cprintln!("{: <12} {}", "age range", old_new_parts.join(", "));
       }
+
+      cprintln!("{: <12} <cyan>{}</cyan>", "tot. size", self.smart_size());
       let mut max_min_parts:Vec<String> = vec![];
-      let mut extra_info = "".to_owned();
       if num_files > 2 {
         let (min_file, max_file) = self.get_min_max_files();
         if let Some(min_resource) = min_file {
@@ -483,12 +484,10 @@ impl ResourceTree {
           max_min_parts.push(cformat!("max. <cyan>{}</cyan> ({})",   max_resource.smart_size(), max_resource.file_name()));
         }
         if max_min_parts.len() > 0  {
-          cprintln!("{: <15}{}", "size range:", max_min_parts.join(", "));
+          cprintln!("{: <12} {}", "size range", max_min_parts.join(", "));
         }
-        
       }
-      cprintln!("{: <10} <cyan>{}</cyan>{}", "tot. size", self.smart_size(), extra_info);
-      cprintln!("{: <10} {}", "max depth", self.max_depth);
+      cprintln!("{: <13} {}", "max depth", self.max_depth);
     }
   }
 
