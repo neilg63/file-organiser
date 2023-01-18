@@ -1,7 +1,7 @@
 use crate::utils::*;
 use walkdir::{DirEntry};
 use std::path::{Path};
-use color_print::cprintln;
+use color_print::{cprintln, cformat};
 extern crate chrono;
 use chrono::prelude::*;
 use std::{os::unix::prelude::MetadataExt, collections::HashMap};
@@ -368,6 +368,26 @@ impl ResourceTree {
     (min_row, max_row)
   }
 
+  pub fn get_oldest_newest_files(&self) -> (Option<ResourceRow>, Option<ResourceRow>) {
+    let mut min_val = 0;
+    let mut max_val = 0;
+    let mut min_row: Option<ResourceRow> = None;
+    let mut max_row: Option<ResourceRow> = None;
+    for row in &self.directories {
+      for resource in row.resources.clone() {
+        let age_val = resource.seconds_old();
+        if age_val > max_val {
+          max_row = Some(resource);
+          max_val = age_val;
+        } else if age_val > 0 && (age_val < min_val || min_val < 1) {
+          min_row = Some(resource);
+          min_val = age_val;
+        }
+      }
+    }
+    (min_row, max_row)
+  }
+
   pub fn num_files(&self) -> usize {
     let mut num = 0;
     for row in &self.directories {
@@ -441,16 +461,33 @@ impl ResourceTree {
     cprintln!("{: <10} <yellow>{}</yellow>", "path", self.path_display());
     cprintln!("{: <10} <green>{}</green>", "total #", num_files);
     if num_files > 0 {
-      cprintln!("{: <10} <cyan>{}</cyan>", "tot. size", self.smart_size());
+      let (min_file, max_file) = self.get_oldest_newest_files();
+      let mut old_new_parts:Vec<String> = vec![];
+      if let Some(min_resource) = min_file {
+        old_new_parts.push(cformat!("newest: <green>{}</green> ({})", min_resource.age_display(), min_resource.file_name()));
+      }
+      if let Some(max_resource) = max_file {
+        old_new_parts.push(cformat!("oldest: <green>{}</green> ({})",   max_resource.age_display(), max_resource.file_name()));
+      }
+      if old_new_parts.len() > 0 {
+        cprintln!("{: <15} {}", "age range:", old_new_parts.join(", "));
+      }
+      let mut max_min_parts:Vec<String> = vec![];
+      let mut extra_info = "".to_owned();
       if num_files > 2 {
         let (min_file, max_file) = self.get_min_max_files();
         if let Some(min_resource) = min_file {
-          cprintln!("{: <10} <cyan>{}</cyan> ({})", "smallest", min_resource.smart_size(), min_resource.relative_path(&self.parent));
+          max_min_parts.push(cformat!("min. <cyan>{}</cyan> ({})", min_resource.smart_size(), min_resource.file_name()));
         }
         if let Some(max_resource) = max_file {
-          cprintln!("{: <10} <cyan>{}</cyan> ({})", "largest", max_resource.smart_size(), max_resource.relative_path(&self.parent));
+          max_min_parts.push(cformat!("max. <cyan>{}</cyan> ({})",   max_resource.smart_size(), max_resource.file_name()));
         }
+        if max_min_parts.len() > 0  {
+          cprintln!("{: <15}{}", "size range:", max_min_parts.join(", "));
+        }
+        
       }
+      cprintln!("{: <10} <cyan>{}</cyan>{}", "tot. size", self.smart_size(), extra_info);
       cprintln!("{: <10} {}", "max depth", self.max_depth);
     }
   }
