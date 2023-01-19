@@ -7,7 +7,6 @@ use chrono::prelude::*;
 use std::{os::unix::prelude::MetadataExt, collections::HashMap};
 use crate::matches::*;
 use crate::criteria::*;
-use std::fs;
 
 #[derive(Debug, Clone)]
 pub struct DetailLevel {
@@ -181,17 +180,7 @@ pub struct ResourceSet {
 
 impl ResourceSet {
   pub fn new(parent: &DirEntry) -> Self {
-    let mut num_subs: usize = 0;
-    let result: Result<fs::ReadDir, std::io::Error>  = fs::read_dir(parent.clone().into_path());
-    if let Ok(rd) = result {
-      for entry in  rd {
-        if let Ok(sub_entry) = entry {
-          if sub_entry.path().is_dir() {
-            num_subs += 1;
-          }
-        }
-      }
-    }
+    let num_subs = get_num_subdirectories(parent);
     ResourceSet { parent: parent.to_owned(), resources: vec![], depth: parent.depth(), num_subs }
   }
 

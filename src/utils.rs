@@ -2,6 +2,7 @@ use walkdir::{DirEntry};
 use std::path::{Path};
 use std::time::UNIX_EPOCH;
 use size::Size;
+use std::fs;
 
 pub fn is_full_path(path_arg: &str) -> bool {
     path_arg.starts_with("/") || path_arg.starts_with("~/")
@@ -237,6 +238,21 @@ pub fn path_to_relative_parts(current_path: &Path, root: &Option<DirEntry>) -> V
     } else {
         vec![]
     }
+}
+
+pub fn get_num_subdirectories(parent: &DirEntry) -> usize {
+  let mut num_subs:usize = 0;
+  let result: Result<fs::ReadDir, std::io::Error>  = fs::read_dir(parent.clone().into_path());
+  if let Ok(rd) = result {
+    for entry in  rd {
+      if let Ok(sub_entry) = entry {
+        if sub_entry.path().is_dir() {
+          num_subs += 1;
+        }
+      }
+    }
+  }
+  num_subs
 }
 
 pub fn path_to_string(ref_path: &Path) -> String {
