@@ -33,7 +33,7 @@ pub fn scan_directory(path_str: &String, details: &DetailLevel, criteria: &Crite
                not_excluded = r_set.is_not_excluded_dir(&criteria.exclude_directories, &root_ref);
             }
             if not_excluded {
-                resource_tree.push(&r_set);
+              resource_tree.push(&r_set);
             }
         } else {
             let mut resource = ResourceRow::new(&file);

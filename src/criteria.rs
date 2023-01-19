@@ -1,7 +1,7 @@
 use crate::args::Args;
 use crate::utils::*;
 use crate::matches::MatchBounds;
-use color_print::cprintln;
+use color_print::{cprintln,cformat};
 
 #[derive(Debug, Copy, Clone)]
 pub enum MatchMode {
@@ -157,12 +157,29 @@ impl Criteria {
     let has_size_constraint = self.has_size_limits();
     let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { "[all]".to_owned() };
     let age_range = days_age_display(self.age, self.newer);
-    cprintln!("<yellow>{: <15}</yellow>", age_range);
-    cprintln!("{: >10} <cyan>{: >9}</cyan>", "size range", size_display);
+    cprintln!("<cyan,italics>CRITERIA</cyan,italics>");
+    cprintln!("<yellow>{}</yellow>", age_range);
+    cprintln!("{: <12} <cyan>{}</cyan>", "size range", size_display);
     let ext_text = if self.include_extensions.len() > 0 { self.include_extensions.join(", ") } else { "[all]".to_owned()  };
-    cprintln!("{: >10} <cyan>{: >9}</cyan>", "extensions", ext_text);
+    cprintln!("{: <12} <cyan>{}</cyan>", "extensions", ext_text);
+    if self.has_pattern() || self.has_omit_pattern() {
+      let mut parts: Vec<String> = vec![];
+      if self.has_pattern() {
+        if let Some(pattern) = self.pattern.clone() {
+          parts.push(cformat!("matching <cyan>{}</cyan>", pattern));
+        }
+      }
+      if self.has_omit_pattern() {
+        if let Some(not_pattern) = self.exclude_pattern.clone() {
+          parts.push(cformat!("not matching <cyan>{}</cyan>", not_pattern));
+        }
+      }
+      if parts.len() > 0 {
+        cprintln!("{: <12} {}", "file names", parts.join(" and "));
+      }
+    }
     let action_text = build_action_text(self.delete_mode(), self.move_mode(), &self.target);
-    cprintln!("{} <yellow>{: <15}</yellow>", "action", action_text);
+    cprintln!("{} <yellow>{: <12}</yellow>", "action", action_text);
   }
 
 }

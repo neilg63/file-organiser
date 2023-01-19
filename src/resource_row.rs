@@ -7,6 +7,7 @@ use chrono::prelude::*;
 use std::{os::unix::prelude::MetadataExt, collections::HashMap};
 use crate::matches::*;
 use crate::criteria::*;
+use std::fs;
 
 #[derive(Debug, Clone)]
 pub struct DetailLevel {
@@ -175,11 +176,23 @@ pub struct ResourceSet {
   pub parent: DirEntry,
   pub resources: Vec<ResourceRow>,
   pub depth: usize,
+  pub num_subs: usize,
 }
 
 impl ResourceSet {
   pub fn new(parent: &DirEntry) -> Self {
-    ResourceSet { parent: parent.to_owned(), resources: vec![], depth: parent.depth() }
+    let mut num_subs: usize = 0;
+    let result: Result<fs::ReadDir, std::io::Error>  = fs::read_dir(parent.clone().into_path());
+    if let Ok(rd) = result {
+      for entry in  rd {
+        if let Ok(sub_entry) = entry {
+          if sub_entry.path().is_dir() {
+            num_subs += 1;
+          }
+        }
+      }
+    }
+    ResourceSet { parent: parent.to_owned(), resources: vec![], depth: parent.depth(), num_subs }
   }
 
   pub fn push(&mut self, resource: &ResourceRow) {
@@ -189,8 +202,6 @@ impl ResourceSet {
   pub fn count(&self) -> usize {
     self.resources.len()
   }
-
-
 
   pub fn is_not_excluded_dir(&self, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
     is_not_excluded_dir(&self.parent, e_dirs, root_ref)
@@ -220,6 +231,16 @@ impl ResourceSet {
       smart_size(self.size())
   }
 
+  pub fn num_sub_dirs_display(&self) -> String {
+    let num = self.num_subs;
+    if num > 0 {
+      let word = pluralize_64("subdir", "s", num as u64);
+      format!("{} {}", num, word)
+    } else {
+      "[no subdirs]".to_owned()
+    }
+  }
+
   pub fn show(&self, root_ref: &Option<DirEntry>, show_files: bool) {  
     if show_files {
       for row in &self.resources {
@@ -227,7 +248,7 @@ impl ResourceSet {
       }
     }
     let files_word = if self.count() == 1 { "file" } else { "files" };
-    cprintln!("<cyan>{: >8}</cyan> {}\t{: >10}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.smart_size(), self.path_display(root_ref));
+    cprintln!("<cyan>{: >8}</cyan> {}\t{: >10}\t{: <10}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.num_sub_dirs_display(), self.smart_size(), self.path_display(root_ref));
   }
 
 }
@@ -288,12 +309,30 @@ impl ResourceTree {
 
    pub fn matched_sub_dir(&mut self, row: &ResourceRow) -> Option<Box<&mut ResourceSet>> {
     if self.directories.len() > 1 {
-      let matched_opt = self.directories.iter_mut().find(|rs| rs.full_path_string() == row.directory_path_string());
-       if let Some(matched_box)  = matched_opt {
-        Some(Box::new(matched_box.as_mut()))
-       } else {
+      let full_path = row.directory_path_string();
+      self.get_matched_sub(full_path)
+    } else {
+      None
+    }
+  }
+
+/*   pub fn matched_sub_dir_ref(&mut self, file: &DirEntry) -> Option<Box<&mut ResourceSet>> {
+    if self.directories.len() > 1 {
+      if let Some(parent) = self.parent.clone() {
+        let full_path = path_to_string(parent.to_owned().path());
+        self.get_matched_sub(full_path)
+      } else {
         None
-       }
+      }
+    } else {
+      None
+    }
+  } */
+
+  fn get_matched_sub(&mut self, full_path: String) -> Option<Box<&mut ResourceSet>> {
+    let matched_opt = self.directories.iter_mut().find(|rs| rs.full_path_string() == full_path);
+    if let Some(matched_box)  = matched_opt {
+      Some(Box::new(matched_box.as_mut()))
     } else {
       None
     }
@@ -310,6 +349,12 @@ impl ResourceTree {
       let _ = &curr_dir.push(row);
     }
   }
+
+/*    pub fn add_sub_to_sub(&mut self, folder: &DirEntry) {
+    if let Some(curr_dir) = self.matched_sub_dir_ref(folder) {
+      let _ = &curr_dir.push_sub(folder);
+    }
+  } */
 
   pub fn add_root(&mut self, parent: &DirEntry) {
     self.parent = Some(parent.to_owned());
@@ -332,8 +377,9 @@ impl ResourceTree {
   }
 
   pub fn num_sub_dirs_display(&self) -> String {
+    let num = self.num_sub_dirs();
     if self.num_sub_dirs() > 0 {
-      let word = if self.num_sub_dirs() == 1 { "subdirectory" } else { "subdirectories" };
+      let word = pluralize_64("subdir", "s", num as u64);
       format!("{} {}", self.num_sub_dirs(), word)
     } else {
       "".to_owned()
@@ -396,6 +442,16 @@ impl ResourceTree {
     num
   }
 
+  pub fn max_depth_scanned(&self) -> usize {
+    let mut num = 0;
+    for row in &self.directories {
+      if row.depth > num {
+        num = row.depth;
+      }
+    }
+    num
+  }
+
   pub fn path_display(&self) -> String {
       if let Some(root) = &self.parent {
         if let Some(root_path) = root.to_owned().into_path().to_str() {
@@ -437,6 +493,7 @@ impl ResourceTree {
   }
 
   pub fn show_extension_stats(&self) {
+    cprintln!("<cyan,italics>BY EXTENSION</cyan,italics>");
     for row in self.build_extension_map().into_iter() {
       let file_word = pluralize_64("file", "s", row.count as u64);
       let ext_text = if row.key.len() > 0 { row.key } else { "[none]".to_owned() };
@@ -458,8 +515,9 @@ impl ResourceTree {
       self.show_extension_stats();
     }
     let num_files = self.num_files();
+    cprintln!("<cyan,italics>OVERVIEW</cyan,italics>");
     cprintln!("{: <12} <yellow>{}</yellow>", "path", self.path_display());
-    cprintln!("{: <12} <green>{}</green>", "total #", num_files);
+    cprintln!("{: <12} <green>{}</green> ({})", "total files", num_files, self.num_sub_dirs_display());
     if num_files > 0 {
       let (min_file, max_file) = self.get_oldest_newest_files();
       let mut old_new_parts:Vec<String> = vec![];
@@ -487,7 +545,7 @@ impl ResourceTree {
           cprintln!("{: <12} {}", "size range", max_min_parts.join(", "));
         }
       }
-      cprintln!("{: <13} {}", "max depth", self.max_depth);
+      cprintln!("{: <12} <cyan>{}</cyan> (limit: {})", "max depth", self.max_depth_scanned(), self.max_depth);
     }
   }
 
