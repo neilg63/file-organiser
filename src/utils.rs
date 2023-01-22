@@ -345,8 +345,8 @@ pub fn days_age_display(min: f64, max: f64) -> String {
 pub fn days_between_display(min: f64, max: f64) -> String {
   let (start_num, start_unit, start_pl) = to_time_unit_pairs(min);
   let (end_num, end_unit, end_pl) = to_time_unit_pairs(max);
-  let start_unit_text = if start_unit == end_unit { [start_unit, start_pl].join("") } else { "".to_owned() };
-  format!("between {} {} and {} {}{} old", start_num, start_unit_text, end_num, end_unit, end_pl)
+  let start_unit_text = if start_unit != end_unit { format!(" {}{}", start_unit, start_pl) } else { "".to_owned() };
+  format!("between {}{} and {} {}{} old", start_num, start_unit_text, end_num, end_unit, end_pl)
 }
 
 pub fn days_part_display(days: f64, is_after: bool) -> String {
