@@ -329,26 +329,42 @@ pub fn smart_dec_format(num: f64) -> String {
 pub fn days_age_display(min: f64, max: f64) -> String {
   let has_min = min > 0f64;
   let has_max = max > min;
-    if has_min || has_max {
-      let mut parts: Vec<String> = vec![];
-      if has_min {
-        parts.push(days_part_display(min, false));
-      }
-      if has_max {
-        parts.push(days_part_display(max, true));
-      }
-      parts.join(" and ")
+  if has_min || has_max {
+    if has_min && has_max {
+      days_between_display(min, max)
+    } else if has_min {
+      days_part_display(min, false)
     } else {
-        "All ages".to_owned()
+      days_part_display(max, true)
     }
+  } else {
+    "All ages".to_owned()
+  }
+}
+
+pub fn days_between_display(min: f64, max: f64) -> String {
+  let (start_num, start_unit, start_pl) = to_time_unit_pairs(min);
+  let (end_num, end_unit, end_pl) = to_time_unit_pairs(max);
+  let start_unit_text = if start_unit == end_unit { [start_unit, start_pl].join("") } else { "".to_owned() };
+  format!("between {} {} and {} {}{} old", start_num, start_unit_text, end_num, end_unit, end_pl)
 }
 
 pub fn days_part_display(days: f64, is_after: bool) -> String {
-    let start = if is_after { "newer"} else { "older" };
-    let pl = if days == 1f64 { "" } else { "s"};
-    let (num, unit) = extract_day_ref_pairs(days);
-    let num_display = smart_dec_format(num);
-    format!("{} than {} {}{}", start, num_display, unit, pl)
+  let start = if is_after { "newer"} else { "older" };
+  let unit_text = days_unit_display(days);
+  format!("{} than {}", start, unit_text)
+}
+
+pub fn days_unit_display(days: f64) -> String {
+  let (num_display, unit, plural_suffix) = to_time_unit_pairs(days);
+  format!("{} {}{} old", num_display, unit, plural_suffix)
+}
+
+pub fn to_time_unit_pairs(days: f64) -> (String, String, String) {
+  let pl = if days == 1f64 { "" } else { "s"};
+  let (num, unit) = extract_day_ref_pairs(days);
+  let num_display = smart_dec_format(num);
+  (num_display, unit, pl.to_owned())
 }
 
 pub fn pluralize_64(single_form: &str, plural_form: &str, count: u64) -> String {
