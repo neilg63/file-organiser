@@ -9,7 +9,7 @@ use crate::path_info::*;
 pub fn scan_directory(path_str: &String, details: &DetailLevel, criteria: &Criteria, delete_confirmed: bool) -> ResourceTree {
     let mut root_ref:Option<DirEntry> = None;
     let mut resource_tree: ResourceTree = ResourceTree::new(criteria.max_depth);
-    let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(criteria.max_depth as usize).follow_links(true);
+    let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(criteria.max_depth as usize).follow_links(true).same_file_system(true);
     let mut may_move = false;
     let mut move_path: Option<Box<PathBuf>> = None;
     if criteria.move_mode() {
@@ -20,6 +20,7 @@ pub fn scan_directory(path_str: &String, details: &DetailLevel, criteria: &Crite
       }
     }
     let may_delete = criteria.delete_mode() && delete_confirmed;
+
     for file in target_dir.into_iter().filter_map(|file| file.ok()) {
         let ft = file.file_type();
         let mut not_excluded = true;
@@ -28,7 +29,7 @@ pub fn scan_directory(path_str: &String, details: &DetailLevel, criteria: &Crite
                 root_ref = Some(file.clone());
                 resource_tree.add_root(&file);
             }
-            let r_set = ResourceSet::new(&file);
+            let r_set = ResourceSet::new(&file  );
             if ft.is_dir() && root_ref.is_some() {
                not_excluded = r_set.is_not_excluded_dir(&criteria.exclude_directories, &root_ref);
             }

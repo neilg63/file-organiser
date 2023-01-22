@@ -326,16 +326,29 @@ pub fn smart_dec_format(num: f64) -> String {
   }
 }
 
-pub fn days_age_display(days: f64, is_after: bool) -> String {
-    if days > 0f64 {
-        let start = if is_after { "newer"} else { "older" };
-        let pl = if days == 1f64 { "" } else { "s"};
-        let (num, unit) = extract_day_ref_pairs(days);
-        let num_display = smart_dec_format(num);
-        format!("{} than {} {}{}", start, num_display, unit, pl)
+pub fn days_age_display(min: f64, max: f64) -> String {
+  let has_min = min > 0f64;
+  let has_max = max > min;
+    if has_min || has_max {
+      let mut parts: Vec<String> = vec![];
+      if has_min {
+        parts.push(days_part_display(min, false));
+      }
+      if has_max {
+        parts.push(days_part_display(max, true));
+      }
+      parts.join(" and ")
     } else {
         "All ages".to_owned()
     }
+}
+
+pub fn days_part_display(days: f64, is_after: bool) -> String {
+    let start = if is_after { "newer"} else { "older" };
+    let pl = if days == 1f64 { "" } else { "s"};
+    let (num, unit) = extract_day_ref_pairs(days);
+    let num_display = smart_dec_format(num);
+    format!("{} than {} {}{}", start, num_display, unit, pl)
 }
 
 pub fn pluralize_64(single_form: &str, plural_form: &str, count: u64) -> String {

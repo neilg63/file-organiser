@@ -104,12 +104,29 @@ impl ResourceRow {
         (size >= min || min < 1) && (size <= max || max < 1) 
     }
 
-    pub fn is_in_day_range(&self, target_days: f64, is_after: bool) -> bool {
-        (is_after && self.days_old() <= target_days) || (!is_after && self.days_old() >= target_days)
+    pub fn is_in_day_range(&self, criteria: &Criteria) -> bool {
+        if criteria.filter_by_age() {
+          let mut matches = false;
+          let has_min = criteria.has_min_age();
+          if has_min {
+            matches = self.days_old() >= criteria.min_age;
+          }
+          if criteria.has_max_age() {
+            let matches_max = self.days_old() < criteria.max_age;
+            if matches && !matches_max {
+              matches = false;
+            } else if !has_min {
+              matches = matches_max;
+            }
+          }
+          matches
+        } else {
+          true
+        }
     }
 
     pub fn matches_criteria(&self, criteria: &Criteria, root_ref: &Option<DirEntry>) -> bool {
-        self.is_in_day_range(criteria.age, criteria.newer) 
+        self.is_in_day_range(&criteria) 
         && self.is_in_size_range(&criteria.sizes)
         && self.has_valid_extension(&criteria.include_extensions, &criteria.exclude_extensions)
         && (!criteria.has_pattern() || self.matches(&criteria.pattern, criteria.bounds, criteria.match_mode))
@@ -359,7 +376,7 @@ impl ResourceTree {
 
   pub fn num_sub_dirs(&self) -> usize { 
     if self.num_dirs() > 0 {
-      self.directories.len() - 1
+      self.directories.clone().into_iter().filter(|rs| rs.depth() == 1).collect::<Vec<Box<ResourceSet>>>().len()
     } else {
       0
     }

@@ -27,8 +27,8 @@ pub struct Criteria {
   pub match_mode: MatchMode,
   pub bounds: MatchBounds,
   pub max_depth: u8,
-  pub age: f64,
-  pub newer: bool,
+  pub min_age: f64,
+  pub max_age: f64,
   pub show_hidden: bool,
   pub action: ActionMode,
   pub target: Option<String>,
@@ -38,8 +38,6 @@ impl Criteria {
   pub fn new(args: &Args) -> Criteria {
     let before = extract_age(&args.before);
     let after = extract_age(&args.after);
-    let is_after = after > 0f64;
-    let time = if is_after { after } else { before };
     let max_depth = if args.max_depth > 0 { args.max_depth } else { 1 };
 
     
@@ -51,7 +49,6 @@ impl Criteria {
 
     let sizes = extract_sizes(&args.size);
 
-    let target_days = time as f64;
     let (move_target, move_mode) = extract_move_target(args.r#move.clone());
     let target = if move_mode { Some(move_target) } else { None };
 
@@ -91,8 +88,8 @@ impl Criteria {
       match_mode,
       bounds,
       max_depth,
-      age: target_days,
-      newer: is_after,
+      min_age: before,
+      max_age: after,
       show_hidden,
       action,
       target
@@ -151,12 +148,24 @@ impl Criteria {
     }
   }
 
+  pub fn filter_by_age(&self) -> bool {
+    self.min_age > 0f64 || self.max_age > 0f64
+  }
+
+  pub fn has_min_age(&self) -> bool {
+    self.min_age > 0f64
+  }
+
+  pub fn has_max_age(&self) -> bool {
+    self.max_age > 0f64 && self.max_age > self.min_age
+  }
+
   pub fn show(&self) {
     let min_size_display = size_display(self.min_size(), "min.");
     let max_size_display = size_display(self.max_size(), "max.");
     let has_size_constraint = self.has_size_limits();
     let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { "[all]".to_owned() };
-    let age_range = days_age_display(self.age, self.newer);
+    let age_range = days_age_display(self.min_age, self.max_age);
     cprintln!("<cyan,italics>CRITERIA</cyan,italics>");
     cprintln!("<yellow>{}</yellow>", age_range);
     cprintln!("{: <12} <cyan>{}</cyan>", "size range", size_display);
