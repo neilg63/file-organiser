@@ -523,7 +523,8 @@ impl ResourceTree {
     let num_files = self.num_files();
     cprintln!("<cyan,italics>OVERVIEW</cyan,italics>");
     cprintln!("{: <12} <yellow>{}</yellow>", "path", self.path_display());
-    cprintln!("{: <12} <green>{}</green> ({})", "total files", num_files, self.num_sub_dirs_display());
+    let sub_dir_info = if self.num_sub_dirs() > 0 { format!("\t({})", self.num_sub_dirs_display()) } else { "".to_owned() };
+    cprintln!("{: <12} <green>{}</green>{}", "total files", num_files, sub_dir_info);
     if num_files > 0 {
       let (min_file, max_file) = self.get_oldest_newest_files();
       let mut old_new_parts:Vec<String> = vec![];
