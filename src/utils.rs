@@ -116,6 +116,20 @@ pub fn extract_size_val(num_chars: &Vec<char>, unit: char) -> u64 {
     int_val
 }
 
+pub fn extract_string_parts(str_val: &String) -> Vec<String> {
+  str_val.to_owned().split("-").into_iter().map(|s| s.to_owned()).collect::<Vec<String>>()
+}
+
+pub fn extract_first_suffix_letter(str_val: &String) -> char {
+  let first_char = str_val.to_owned().to_lowercase().chars().into_iter().find(|c| c.is_ascii_alphabetic());
+  if let Some(char) = first_char {
+    char
+  } else {
+    '-'
+  }
+}
+
+
 pub fn extract_age(size_str: &String) -> f64 {
   let chars: Vec<char> = size_str.to_lowercase().chars().into_iter().collect();
   let mut num = 0f64;
@@ -343,21 +357,21 @@ pub fn days_age_display(min: f64, max: f64) -> String {
 }
 
 pub fn days_between_display(min: f64, max: f64) -> String {
-  let (start_num, start_unit, start_pl) = to_time_unit_pairs(min);
-  let (end_num, end_unit, end_pl) = to_time_unit_pairs(max);
-  let start_unit_text = if start_unit != end_unit { format!(" {}{}", start_unit, start_pl) } else { "".to_owned() };
-  format!("between {}{} and {} {}{} old", start_num, start_unit_text, end_num, end_unit, end_pl)
+  let (start_num, start_unit, _spl) = to_time_unit_pairs(min);
+  let (_end_num, end_unit) = extract_day_ref_pairs(max);
+  let start_unit_text = if start_unit != end_unit { days_to_day_hours_min_secs(min) } else { start_num };
+  let end_unit_text = days_to_day_hours_min_secs(max);
+  format!("between {} and {} old", start_unit_text, end_unit_text)
 }
 
 pub fn days_part_display(days: f64, is_after: bool) -> String {
   let start = if is_after { "newer"} else { "older" };
-  let unit_text = days_unit_display(days);
-  format!("{} than {}", start, unit_text)
+  format!("{} than {}", start, days_unit_display(days))
 }
 
 pub fn days_unit_display(days: f64) -> String {
-  let (num_display, unit, plural_suffix) = to_time_unit_pairs(days);
-  format!("{} {}{} old", num_display, unit, plural_suffix)
+  let unit_text = days_to_day_hours_min_secs(days);
+  format!("{} old", unit_text)
 }
 
 pub fn to_time_unit_pairs(days: f64) -> (String, String, String) {
@@ -385,29 +399,29 @@ pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   let has_days = seconds >= secs_per_day;
   let show_hours = seconds < secs_per_day * 3;
   let has_hours = seconds >= secs_per_hour;
-  let show_minutes = seconds < secs_per_hour * 6;
+  let show_minutes = seconds < (secs_per_hour * 6);
   let has_minutes = seconds >= 60;
   let show_seconds = seconds < 60 * 5;
   if has_days {
     let days = seconds as f64 / secs_per_day as f64;
-    if show_hours {
-      let hours = (days % 1f64) * 24f64;
+    let hours = (days % 1f64) * 24f64;
+    if show_hours && hours != 0f64 {
       format!("{:.0} {} {:.0}{}", days, pluralize_64("day", "s", days as u64), hours, "h")
     } else {
       format!("{:.0} {}", days, pluralize_64("day", "s", days as u64))
     }
   } else if has_hours {
     let hours = seconds as f64 / secs_per_hour as f64;
-    if show_minutes {
-      let minutes = (hours % 1f64) * 60f64;
+    let minutes = (hours % 1f64) * 60f64;
+    if show_minutes && minutes != 0f64 {
       format!("{:.0}{} {:.0}{}", hours, "h", minutes, "m")
     } else {
       format!("{:.0}{}", hours, "h")
     }
   } else if has_minutes {
     let minutes = seconds as f64 / 60.0;
-    if show_seconds {
-      let secs = seconds % 60;
+    let secs = seconds % 60;
+    if show_seconds && secs != 0u64 {
       format!("{:.0}{} {:.0}{}", minutes, "m", secs, "s")
     } else {
       format!("{:.0}{}", minutes, "m")
@@ -415,4 +429,10 @@ pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   } else {
     format!("{:.0}{}", seconds, "s")
   }
+}
+
+
+pub fn days_to_day_hours_min_secs(days: f64) -> String {
+  let secs = days * 86400f64;
+  seconds_to_day_hours_min_secs(secs as u64)
 }

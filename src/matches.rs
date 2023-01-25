@@ -26,3 +26,8 @@ pub fn match_string(source: String, pattern: &String, case_insensitive: bool, bo
   let re = Regex::new(corrected_pattern.as_str()).unwrap();
   re.is_match(source.as_str())
 }
+
+
+pub fn string_ends_with(source: &String, pattern: &str) -> bool {
+  match_string(source.to_owned(), &pattern.to_owned(), false, MatchBounds::End,MatchMode::Regex)
+}

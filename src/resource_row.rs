@@ -449,10 +449,10 @@ impl ResourceTree {
   }
 
   pub fn max_depth_scanned(&self) -> usize {
-    let mut num = 0;
+    let mut num = 1;
     for row in &self.directories {
       if row.depth > num {
-        num = row.depth;
+        num = row.depth + 1;
       }
     }
     num

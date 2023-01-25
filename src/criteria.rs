@@ -1,6 +1,6 @@
 use crate::args::Args;
 use crate::utils::*;
-use crate::matches::MatchBounds;
+use crate::matches::{MatchBounds, string_ends_with};
 use color_print::{cprintln,cformat};
 
 #[derive(Debug, Copy, Clone)]
@@ -36,8 +36,19 @@ pub struct Criteria {
 
 impl Criteria {
   pub fn new(args: &Args) -> Criteria {
-    let before = extract_age(&args.before);
-    let after = extract_age(&args.after);
+    // accept -separated range or single for --before
+    let before_parts = extract_string_parts(&args.before);
+    let has_before_range = before_parts.len() > 1 && before_parts.get(1).is_some();
+    let mut before_ref = if has_before_range { before_parts.get(0).unwrap().to_owned() } else { "".to_owned() };
+    // use either -a, --after value for min. age or first value in the before range
+    let after_ref = if has_before_range { before_parts.get(1).unwrap().to_owned() } else { args.after.to_owned() };
+    if has_before_range && !string_ends_with(&before_ref, "[mdhdwy]") && string_ends_with(&after_ref, "[mdhdwy]") {
+      let suffix = extract_first_suffix_letter(&after_ref);
+      before_ref = format!("{},{}", before_ref, suffix);
+    }
+
+    let before = extract_age(&before_ref);
+    let after = extract_age(&after_ref);
     let max_depth = if args.max_depth > 0 { args.max_depth } else { 1 };
 
     
