@@ -10,7 +10,7 @@ This utility is still under development and should be used with caution. I have 
 - Summarise file directory contents by size, age and extensions (-g flag)
 - Filter file listings by age, size, extension(s) and/or file name pattern
 - Move filtered files to another directory
-- Delete filtered files (prompted with -f flag)
+- Delete filtered files (prompted without -f flag)
 
 ## Drawbacks
 
