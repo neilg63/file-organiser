@@ -36,7 +36,7 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 ## Arguments
 
 - **--before, -b** only files modified before the specified number of days ago, `--before 30` _older than 30 days_. For other periods, you may use the suffixes `s` for seconds, `m` for minutes, `h` for hours, `w` for weeks or `y` for years, e.g. `5m` _5 minutes_ . You may add a range either via -a (--after) or simply with a dash, e.g. `-b 7-14` means between 7 and 14 days old while `-b 30m-12h` means between 30 minutes and 12 hours old.
-- **--after, -a** only files modified after the specified number of days ago, `--newer 30` _newer than 30 days_ . This may be combined with -b (--before) for an age range.
+- **--after, -a** only files modified after the specified number of days ago, `--after 30` _newer than 30 days_ . This may be combined with -b (--before) for an age range.
 - **--size, -s** file size range with k (KB), m (MB) or g (GB) unit suffixes. e.g. 1-2M = 1MB to 2MB. One size alone is assumed to be the minimum. To set only a maximum prefix with a comma ( ,5MB) or use a 0-5M range.
 - **--ext, -e** extensions, omit to allow all extensions
 - **--not-ext, -n** extensions to be excluded, e.g. move or delete all files that do not include these extensions
