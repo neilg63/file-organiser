@@ -69,7 +69,12 @@ fn move_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &O
   if let Some(mp) = target {
    let target_base_string = mp.to_str().unwrap().to_owned();
    new_path_str = [target_base_string.clone(), resource.relative_path(root_ref)].join(MAIN_SEPARATOR.to_string().as_str());
-   let new_parent_dir = [target_base_string, resource.relative_parent_path(root_ref)].join(MAIN_SEPARATOR.to_string().as_str());
+   let needs_parent = resource.depth() > 1;
+   let new_parent_dir = if needs_parent {
+    [target_base_string, resource.relative_parent_path(root_ref)].join(MAIN_SEPARATOR.to_string().as_str())
+   } else {
+    target_base_string
+   };
    let new_parent_path = Path::new(new_parent_dir.as_str());
    let mut has_parent = new_parent_path.exists();
    if  !has_parent {

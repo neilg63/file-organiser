@@ -18,7 +18,7 @@ pub struct Args {
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub after: String,
   
-  pub path: Option<String>,
+  pub path: Option<Vec<String>>,
 
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub ext: String,
@@ -44,7 +44,7 @@ pub struct Args {
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub size: String,
 
-  #[clap(short = 'd', long, value_parser, default_value_t = 255) ]
+  #[clap(short = 'd', long, value_parser, default_value_t = 5) ]
   pub max_depth: u8,
 
   #[arg(short = 'c', long, value_enum)]

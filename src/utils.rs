@@ -1,5 +1,5 @@
 use walkdir::{DirEntry};
-use std::path::{Path};
+use std::path::{Path, MAIN_SEPARATOR};
 use std::time::UNIX_EPOCH;
 use size::Size;
 use std::fs;
@@ -435,4 +435,32 @@ pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
 pub fn days_to_day_hours_min_secs(days: f64) -> String {
   let secs = days * 86400f64;
   seconds_to_day_hours_min_secs(secs as u64)
+}
+
+pub fn path_string_to_file_name(path_ref: &String) -> String {
+  if let Some(last_part) = path_ref.split(MAIN_SEPARATOR).last() {
+    last_part.to_owned()
+  } else {
+    path_ref.to_owned()
+  }
+}
+
+pub fn path_string_to_head(path_ref: &String) -> String {
+  let parts:Vec<&str> = path_ref.split(MAIN_SEPARATOR).into_iter().collect();
+  let num = parts.len();
+  if num > 1 {
+    let head = parts.into_iter().take(num - 1).map(|s| s).collect::<Vec<&str>>().join(MAIN_SEPARATOR.to_string().as_str());
+    format!("{}{}", head, MAIN_SEPARATOR)
+  } else {
+    "".to_owned()
+  }
+}
+
+pub fn to_short_pattern(pattern: &String) -> String {
+  if pattern.len() > 32 && pattern.contains("|") && pattern.contains("(") { 
+    let head = pattern.split("|").into_iter().take(2).collect::<Vec<&str>>().join("|");
+    format!("{}|...)", head)
+  } else {
+    pattern.to_owned()
+  }
 }

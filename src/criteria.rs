@@ -35,7 +35,7 @@ pub struct Criteria {
 }
 
 impl Criteria {
-  pub fn new(args: &Args) -> Criteria {
+  pub fn new(args: &Args, file_pattern: Option<String>) -> Criteria {
     // accept -separated range or single for --before
     let before_parts = extract_string_parts(&args.before);
     let has_before_range = before_parts.len() > 1 && before_parts.get(1).is_some();
@@ -49,9 +49,8 @@ impl Criteria {
 
     let before = extract_age(&before_ref);
     let after = extract_age(&after_ref);
-    let max_depth = if args.max_depth > 0 { args.max_depth } else { 1 };
+    let max_depth = if args.max_depth > 0 && file_pattern.is_none() { args.max_depth } else { 1 };
 
-    
     let include_extensions:Vec<String> = extract_extensions(&args.ext);
 
     let exclude_extensions:Vec<String> = extract_extensions(&args.not_ext);
@@ -67,7 +66,13 @@ impl Criteria {
     let has_end_pattern = !has_start_pattern && args.ends_with.len() > 0;
     let pattern_str = if has_start_pattern { args.starts_with.clone() } else if has_end_pattern { args.ends_with.clone() } else { args.pattern.clone() };
     
-    let pattern = if pattern_str.len() > 0 { Some(pattern_str.clone()) } else { None };
+    let pattern = if file_pattern.is_some() { 
+      file_pattern
+    } else if pattern_str.len() > 0 {
+      Some(pattern_str.clone())
+    } else { 
+      None
+    };
 
     let bounds = if has_start_pattern { MatchBounds::Start } else if has_end_pattern { MatchBounds::End } else { MatchBounds::Open };
     
@@ -186,7 +191,8 @@ impl Criteria {
       let mut parts: Vec<String> = vec![];
       if self.has_pattern() {
         if let Some(pattern) = self.pattern.clone() {
-          parts.push(cformat!("matching <cyan>{}</cyan>", pattern));
+          let short_pattern = to_short_pattern(&pattern);
+          parts.push(cformat!("matching <cyan>{}</cyan>", short_pattern));
         }
       }
       if self.has_omit_pattern() {
