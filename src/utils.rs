@@ -304,7 +304,7 @@ pub fn is_not_excluded_dir(resource: &DirEntry, e_dirs: &Vec<String>, root_ref: 
     let dirs = to_relative_parts(resource, root_ref);
     e_dirs.into_iter().any(|d| {
       if directory_ref_starts_with_separator(d) {
-        to_os_directory_string(&dirs).find(d).unwrap_or(100) == 0
+        to_os_directory_string(&dirs).starts_with(d)
       } else {
         strings_contain_str(&dirs, d)
       }
