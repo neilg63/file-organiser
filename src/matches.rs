@@ -8,7 +8,7 @@ pub enum MatchBounds {
   End
 }
 
-pub fn match_string(source: String, pattern: &String, case_insensitive: bool, bounds: MatchBounds, mode: MatchMode) -> bool {
+pub fn match_string(source: String, pattern: &str, case_insensitive: bool, bounds: MatchBounds, mode: MatchMode) -> bool {
   let prefix = if case_insensitive { "(?i)" } else { "" };
   let start_bounds = match bounds {
     MatchBounds::Start => if pattern.starts_with("^") { "" } else { "^" },
@@ -19,7 +19,7 @@ pub fn match_string(source: String, pattern: &String, case_insensitive: bool, bo
     _ => ""
   };
   let parsed_pattern = match mode {
-    MatchMode::Simple => pattern.as_str().replace(".", "\\.").replace("*", ".*"),
+    MatchMode::Simple => pattern.replace(".", "\\.").replace("*", ".*"),
     _ => pattern.clone().to_owned()
   };
   let corrected_pattern = [prefix, start_bounds, parsed_pattern.as_str(), end_bounds].join("");
@@ -28,6 +28,6 @@ pub fn match_string(source: String, pattern: &String, case_insensitive: bool, bo
 }
 
 
-pub fn string_ends_with(source: &String, pattern: &str) -> bool {
+pub fn string_ends_with(source: &str, pattern: &str) -> bool {
   match_string(source.to_owned(), &pattern.to_owned(), false, MatchBounds::End,MatchMode::Regex)
 }

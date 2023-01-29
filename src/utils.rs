@@ -70,7 +70,7 @@ pub fn build_action_text(delete_mode: bool, move_mode: bool, move_target: &Optio
   action_parts.join(" ").to_owned()
 }
 
-pub fn is_in_extensions(ext: &String, extensions: &Vec<String>) -> bool {
+pub fn is_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
     if extensions.len() > 0 {
         extensions.iter().any(|e| matches_empty_extension_ref(e, ext))
     } else {
@@ -78,11 +78,11 @@ pub fn is_in_extensions(ext: &String, extensions: &Vec<String>) -> bool {
     }
 }
 
-pub fn is_not_in_extensions(ext: &String, extensions: &Vec<String>) -> bool {
+pub fn is_not_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
     extensions.iter().any(|e| matches_empty_extension_ref(e, ext)) == false
 }
 
-fn matches_empty_extension_ref(match_ext: &String, file_ext: &String) -> bool {
+fn matches_empty_extension_ref(match_ext: &str, file_ext: &str) -> bool {
   match_ext == file_ext || (match_ext == "_" && file_ext == "")
 }
 
@@ -116,11 +116,11 @@ pub fn extract_size_val(num_chars: &Vec<char>, unit: char) -> u64 {
     int_val
 }
 
-pub fn extract_string_parts(str_val: &String) -> Vec<String> {
+pub fn extract_string_parts(str_val: &str) -> Vec<String> {
   str_val.to_owned().split("-").into_iter().map(|s| s.to_owned()).collect::<Vec<String>>()
 }
 
-pub fn extract_first_suffix_letter(str_val: &String) -> char {
+pub fn extract_first_suffix_letter(str_val: &str) -> char {
   let first_char = str_val.to_owned().to_lowercase().chars().into_iter().find(|c| c.is_ascii_alphabetic());
   if let Some(char) = first_char {
     char
@@ -130,7 +130,7 @@ pub fn extract_first_suffix_letter(str_val: &String) -> char {
 }
 
 
-pub fn extract_age(size_str: &String) -> f64 {
+pub fn extract_age(size_str: &str) -> f64 {
   let chars: Vec<char> = size_str.to_lowercase().chars().into_iter().collect();
   let mut num = 0f64;
   let mut num_chars: Vec<char> = vec![];
@@ -162,7 +162,7 @@ pub fn extract_age(size_str: &String) -> f64 {
   num / div
 }
 
-pub fn extract_sizes(size_str: &String) -> (u64, u64) {
+pub fn extract_sizes(size_str: &str) -> (u64, u64) {
     let mut min = 0u64;
     let mut max = 0u64;
     let ref_str = size_str.trim().to_lowercase();
@@ -437,7 +437,7 @@ pub fn days_to_day_hours_min_secs(days: f64) -> String {
   seconds_to_day_hours_min_secs(secs as u64)
 }
 
-pub fn path_string_to_file_name(path_ref: &String) -> String {
+pub fn path_string_to_file_name(path_ref: &str) -> String {
   if let Some(last_part) = path_ref.split(MAIN_SEPARATOR).last() {
     last_part.to_owned()
   } else {
@@ -445,7 +445,7 @@ pub fn path_string_to_file_name(path_ref: &String) -> String {
   }
 }
 
-pub fn path_string_to_head(path_ref: &String) -> String {
+pub fn path_string_to_head(path_ref: &str) -> String {
   let parts:Vec<&str> = path_ref.split(MAIN_SEPARATOR).into_iter().collect();
   let num = parts.len();
   if num > 1 {
@@ -456,7 +456,7 @@ pub fn path_string_to_head(path_ref: &String) -> String {
   }
 }
 
-pub fn to_short_pattern(pattern: &String) -> String {
+pub fn to_short_pattern(pattern: &str) -> String {
   if pattern.len() > 32 && pattern.contains("|") && pattern.contains("(") { 
     let head = pattern.split("|").into_iter().take(2).collect::<Vec<&str>>().join("|");
     format!("{}|...)", head)

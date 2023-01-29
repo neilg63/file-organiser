@@ -6,7 +6,7 @@ use crate::criteria::*;
 use crate::path_info::*;
 
 
-pub fn scan_directory(path_str: &String, details: &DetailLevel, criteria: &Criteria, delete_confirmed: bool) -> ResourceTree {
+pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &Criteria, delete_confirmed: bool) -> ResourceTree {
     let mut root_ref:Option<DirEntry> = None;
     let mut resource_tree: ResourceTree = ResourceTree::new(criteria.max_depth);
     let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(criteria.max_depth as usize).follow_links(true).same_file_system(true);

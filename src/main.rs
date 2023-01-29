@@ -35,7 +35,6 @@ fn main() {
     let args = Args::parse();
     let path_info = PathInfo::new_from_args(&args);
     let criteria = Criteria::new(&args, path_info.pattern);
-
     if path_info.exists {
         let details = DetailLevel::new(&args.list, &args.groups, &args.void);
         let resource_tree = scan_directory(&path_info.canonical, &details, &criteria, false);
