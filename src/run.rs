@@ -39,13 +39,6 @@ pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &Criteria
         } else {
             let mut resource = ResourceRow::new(&file);
             if resource.matches_criteria(&criteria, &root_ref) {
-                if resource.depth() < 2 {
-                    resource_tree.add_to_parent(&resource);
-                }  else {
-                    if resource.is_not_in_excluded_dir(&criteria, &root_ref) { 
-                        resource_tree.add_to_sub(&resource);
-                    }
-                }
                 if may_move {
                   let (moved, new_path) = move_file(&resource, &move_path, &root_ref);
                   if moved {
@@ -55,6 +48,13 @@ pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &Criteria
                   if let Ok(_ok) = remove_file(resource.path_ref()) {
                     resource.set_deleted();
                   }
+                }
+                if resource.depth() < 2 {
+                    resource_tree.add_to_parent(&resource);
+                }  else {
+                    if resource.is_not_in_excluded_dir(&criteria, &root_ref) { 
+                        resource_tree.add_to_sub(&resource);
+                    }
                 }
             }
         }

@@ -183,7 +183,9 @@ impl ResourceRow {
     }
 
     pub fn show(&self, root_ref: &Option<DirEntry>) {
-        cprintln!("{: >9}\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t<yellow>{}</yellow>", self.age_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), self.file_display(root_ref));
+      let rel_file_path = self.file_display(root_ref);
+      let file_ref = if self.deleted {  cformat!("<red>{}</red> [del]", rel_file_path) } else { cformat!("<yellow>{}</yellow>", rel_file_path) };
+      cprintln!("{: >9}\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t{}", self.age_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), file_ref);
     }
 
 }
