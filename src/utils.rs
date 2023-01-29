@@ -296,6 +296,11 @@ pub fn is_not_excluded_dir(resource: &DirEntry, e_dirs: &Vec<String>, root_ref: 
   }
 }
 
+pub fn is_not_in_hidden_dir(resource: &DirEntry, root_ref: &Option<DirEntry>) -> bool {
+  let dirs = to_relative_parts(resource, root_ref);
+  dirs.into_iter().any(|d| d.starts_with(".")) == false
+}
+
 pub fn extract_day_ref_pairs(days: f64) -> (f64, String) {
   let mut unit = "day";
   let mut num = days;

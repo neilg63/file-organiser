@@ -66,8 +66,9 @@ impl ResourceRow {
         is_in_extensions(&self.extension, extensions) && is_not_in_extensions(&self.extension, exclusions)
     }
 
-    pub fn is_not_in_excluded_dir(&self, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
-      is_not_excluded_dir(&self.file, e_dirs, root_ref)
+    pub fn is_not_in_excluded_dir(&self, criteria: &Criteria, root_ref: &Option<DirEntry>) -> bool {
+      let e_dirs = &criteria.exclude_directories;
+      is_not_excluded_dir(&self.file, e_dirs, root_ref) && (criteria.show_hidden || is_not_in_hidden_dir(&self.file, root_ref))
     }
 
     pub fn file_name(&self) -> String {

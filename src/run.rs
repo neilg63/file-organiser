@@ -42,7 +42,7 @@ pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &Criteria
                 if resource.depth() < 2 {
                     resource_tree.add_to_parent(&resource);
                 }  else {
-                    if resource.is_not_in_excluded_dir(&criteria.exclude_directories, &root_ref) { 
+                    if resource.is_not_in_excluded_dir(&criteria, &root_ref) { 
                         resource_tree.add_to_sub(&resource);
                     }
                 }
