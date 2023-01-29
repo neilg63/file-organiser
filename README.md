@@ -40,15 +40,15 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - **--size, -s** file size range with k (KB), m (MB) or g (GB) unit suffixes. e.g. 1-2M = 1MB to 2MB. One size alone is assumed to be the minimum. To set only a maximum prefix with a comma ( ,5MB) or use a 0-5M range.
 - **--ext, -e** extensions, omit to allow all extensions
 - **--not-ext, -n** extensions to be excluded, e.g. move or delete all files that do not include these extensions
-- **--exclude-dirs, -q** directories at any nesting level to be excluded
+- **--exclude-dirs, -q** directories to be excluded. These are relative to the target directory. If prefixed by your system's directory separator (`/` on Linux and Mac and `\` on Windows), it will exclude all subdirectories starting from the parent directory, otherwise it will exclude all subdirectories at any nesting level. You may exclude multiple subdirectory path with comma-separated lists e.g. `/node_modules,/dist` will exclude all files nested in these subdirectories.
 - **--list, -l** Flag to show individual file details rather than just the overview
 - **--groups, -g** Flag to show stats by extension groups before the main overview
 - **--max-depth, -d** Max depth of subdirectories to scan. Defaults to 5 to limit overhead of parsing deeply nested directories. Max value is 255.
-- **--pattern, -p** Match pattern for the file name
-- **--omit-pattern, -o** Omit file names matching this pattern
+- **--pattern, -p** Match pattern for the file name. Add the `-x` flag to use full regular expressions in quotes.
+- **--omit-pattern, -o** Omit file names matching this pattern. This may be combined with `--pattern, -p` or `--ext, -e` for more advanced pattern matching.
 - **--starts-with** Match pattern from the start of the file name
 - **--ends-with** Match pattern from the end of the file name, with or without the extension
-- **--regex-mode, -x** Flag to interpret the above pattern as a full regular expression, e.g. where `a*` means any number of the preceding character, otherwise _\*_ is a wildcard for any characters, which in full regex mode is `._`. For simple pattern matches `.` is interpreted literally, while in full regex mode it means any character and must be escaped to match a dot.
+- **--regex-mode, -x** Flag to interpret the above pattern as a full regular expression, e.g. where `a*` means any number of the preceding character, otherwise _\*_ is a wildcard for any characters, which in full regex mode is `.*`. For simple pattern matches `.` is interpreted literally, while in full regex mode it means any character and must be escaped to match a dot.
 - **--move, -m** Move to specified new target directory
 - **--delete, -u** Delete files filtered by the above criteria
 - **--force, -f** Bypass prompt for bulk deletion (useful for cron jobs)
