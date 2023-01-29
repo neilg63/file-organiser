@@ -287,10 +287,28 @@ pub fn path_to_relative_path(current_path: &Path, root: &Option<DirEntry>) -> St
     }
 }
 
+pub fn directory_ref_starts_with_separator(path_ref: &str) -> bool {
+  path_ref.starts_with(MAIN_SEPARATOR)
+}
+
+pub fn to_os_directory_string(dirs: &Vec<String>) -> String {
+  format!("{}{}",MAIN_SEPARATOR, dirs.join(MAIN_SEPARATOR.to_string().as_str()))
+}
+
+pub fn strings_contain_str(dirs: &Vec<String>, segment: &str) -> bool {
+  dirs.into_iter().any(|d2| segment.to_owned() == d2.to_owned())
+}
+
 pub fn is_not_excluded_dir(resource: &DirEntry, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
   if e_dirs.len() > 0 {
     let dirs = to_relative_parts(resource, root_ref);
-    dirs.into_iter().any(|d| e_dirs.contains(&d)) == false
+    e_dirs.into_iter().any(|d| {
+      if directory_ref_starts_with_separator(d) {
+        to_os_directory_string(&dirs).find(d).unwrap_or(100) == 0
+      } else {
+        strings_contain_str(&dirs, d)
+      }
+    }) == false
   } else {
     true
   }
