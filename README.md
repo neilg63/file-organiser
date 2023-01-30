@@ -49,10 +49,11 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - **--starts-with** Match pattern from the start of the file name
 - **--ends-with** Match pattern from the end of the file name, with or without the extension
 - **--regex-mode, -x** Flag to interpret the above pattern as a full regular expression, e.g. where `a*` means any number of the preceding character, otherwise _\*_ is a wildcard for any characters, which in full regex mode is `.*`. For simple pattern matches `.` is interpreted literally, while in full regex mode it means any character and must be escaped to match a dot.
+- **--copy, -c** Copy to specified new target directory. Takes precedence over `--move, -m`;
 - **--move, -m** Move to specified new target directory
 - **--delete, -u** Delete files filtered by the above criteria
 - **--force, -f** Bypass prompt for bulk deletion (useful for cron jobs)
-- **--hidden, -c** Match hidden files and directories, e.g. `.git` as folder or `.gitignore` as a file
+- **--hidden, -y** Match hidden files and directories, e.g. `.git` as folder or `.gitignore` as a file
 
 ## Installation
 

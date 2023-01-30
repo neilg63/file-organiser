@@ -45,7 +45,7 @@ fn main() {
             if num_matched_files > 0 {
                 let file_word = pluralize_64("file", "s", num_matched_files as u64);
                 if action_prompt(format!("Are you sure you want to delete the {} above {}?", num_matched_files, file_word).as_str()) {
-                scan_directory(&path_info.canonical, &details, &criteria, true);
+                    scan_directory(&path_info.canonical, &details, &criteria, true);
                     cprintln!("<green>deleted</green>");
                 } else {
                     cprintln!("<red>Not deleted</red>");

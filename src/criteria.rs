@@ -12,6 +12,7 @@ pub enum MatchMode {
 pub enum ActionMode {
   List,
   Move,
+  Copy,
   Delete,
   DirectDelete // unprompted
 }
@@ -59,8 +60,9 @@ impl Criteria {
 
     let sizes = extract_sizes(&args.size);
 
-    let (move_target, move_mode) = extract_move_target(args.r#move.clone());
-    let target = if move_mode { Some(move_target) } else { None };
+    let (target, copy_mode) = extract_move_target(args.copy.clone());
+    let (target, move_mode) = if copy_mode { (target, false ) } else { extract_move_target(args.r#move.clone()) };
+    let target = if move_mode { Some(target) } else { None };
 
     let has_start_pattern = args.starts_with.len() > 0;
     let has_end_pattern = !has_start_pattern && args.ends_with.len() > 0;
@@ -81,7 +83,9 @@ impl Criteria {
     let delete_mode = !move_mode && args.delete;
 
     let force_delete = delete_mode && args.force;
-    let action = if move_mode {
+    let action = if copy_mode {
+      ActionMode::Copy
+    } else if move_mode {
       ActionMode::Move
     } else if force_delete {
       ActionMode::DirectDelete
@@ -164,6 +168,25 @@ impl Criteria {
     }
   }
 
+  pub fn copy_mode(&self) -> bool {
+    match self.action {
+      ActionMode::Copy => true,
+      _ => false,
+    }
+  }
+
+  pub fn target_ref(&self) -> String {
+    if let Some(tg) = self.target.clone() {
+      tg.clone()
+    } else {
+      "".to_owned()
+    }
+  }
+
+  pub fn target_mode(&self) -> bool {
+    self.move_mode() || self.copy_mode()
+  }
+
   pub fn filter_by_age(&self) -> bool {
     self.min_age > 0f64 || self.max_age > 0f64
   }
@@ -174,6 +197,25 @@ impl Criteria {
 
   pub fn has_max_age(&self) -> bool {
     self.max_age > 0f64 && self.max_age > self.min_age
+  }
+
+  pub fn to_text(&self) -> String {
+    let action = match self.action {
+      ActionMode::Move => "move to",
+      ActionMode::Copy => "copy to",
+      ActionMode::Delete => if self.delete_mode() {
+        "delete"
+      } else {
+        "list"
+      },
+      _ => "list"
+    };
+    let target = if self.target_mode() {
+        format!(" {}", self.target_ref())
+    } else {
+      "".to_owned()
+    };
+    format!("{}{}", action, target)
   }
 
   pub fn show(&self) {
@@ -204,7 +246,7 @@ impl Criteria {
         cprintln!("{: <12} {}", "file names", parts.join(" and "));
       }
     }
-    let action_text = build_action_text(self.delete_mode(), self.move_mode(), &self.target);
+    let action_text = self.to_text();
     cprintln!("{} <yellow>{: <12}</yellow>", "action", action_text);
   }
 

@@ -55,21 +55,6 @@ pub fn extract_timestamp(file: &DirEntry) -> u64 {
     ts
 }
 
-pub fn build_action_text(delete_mode: bool, move_mode: bool, move_target: &Option<String>) -> String {
-  let mut action_parts: Vec<&str> = vec![];
-  if move_mode {
-      action_parts.push("move to");
-      if let Some(tg) = move_target {
-        action_parts.push(tg.as_str());
-      }
-  } else if delete_mode { 
-      action_parts.push("delete");
-  } else {
-    action_parts.push("list");
-  }
-  action_parts.join(" ").to_owned()
-}
-
 pub fn is_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
     if extensions.len() > 0 {
         extensions.iter().any(|e| matches_empty_extension_ref(e, ext))

@@ -25,13 +25,17 @@ impl DetailLevel {
     }
 }
 
+pub enum Action {
+
+}
+
 
 #[derive(Debug, Clone)]
 pub struct ResourceRow {
     pub file: DirEntry,
     pub extension: String,
     pub ts: u64,
-    pub move_target: Option<String>,
+    pub target: Option<String>,
     pub deleted: bool,
 }
 
@@ -41,13 +45,13 @@ impl ResourceRow {
             file: file.to_owned(), 
             extension: extract_extension(file),
             ts: extract_timestamp(file),
-            move_target: None,
+            target: None,
             deleted: false,
          }
     }
 
-    pub fn set_move_target(&mut self, target: &str) {
-      self.move_target = Some(target.to_owned());
+    pub fn set_target(&mut self, target: &str) {
+      self.target = Some(target.to_owned());
     }
 
     pub fn set_deleted(&mut self) {

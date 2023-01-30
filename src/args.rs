@@ -47,7 +47,7 @@ pub struct Args {
   #[clap(short = 'd', long, value_parser, default_value_t = 5) ]
   pub max_depth: u8,
 
-  #[arg(short = 'c', long, value_enum)]
+  #[arg(short = 'y', long, value_enum)]
   pub hidden: bool,
 
   #[arg(short, long, value_enum)]
@@ -64,6 +64,9 @@ pub struct Args {
 
   #[clap(short, long, value_parser)]
   pub r#move: Option<String>,
+
+  #[clap(short, long, value_parser)]
+  pub r#copy: Option<String>,
 
   // delete with prompt, abbr. u for unlink
   #[arg(short = 'u', long, value_enum)]

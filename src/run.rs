@@ -1,4 +1,4 @@
-use std::fs::{remove_file,rename, create_dir_all};
+use std::fs::{remove_file,rename, copy, create_dir_all};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use walkdir::{WalkDir, DirEntry};
 use crate::resource_row::*;
@@ -10,13 +10,14 @@ pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &Criteria
     let mut root_ref:Option<DirEntry> = None;
     let mut resource_tree: ResourceTree = ResourceTree::new(criteria.max_depth);
     let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(criteria.max_depth as usize).follow_links(true).same_file_system(true);
+    let mut may_copy = false;
     let mut may_move = false;
-    let mut move_path: Option<Box<PathBuf>> = None;
+    let mut target_path: Option<Box<PathBuf>> = None;
     if criteria.move_mode() {
       let move_dir_info = PathInfo::new(criteria.target.clone().unwrap().as_str());
       may_move = move_dir_info.exists;
       if may_move {
-        move_path = Some(move_dir_info.path);
+        target_path = Some(move_dir_info.path);
       }
     }
     let may_delete = criteria.delete_mode() && delete_confirmed;
@@ -39,10 +40,15 @@ pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &Criteria
         } else {
             let mut resource = ResourceRow::new(&file);
             if resource.matches_criteria(&criteria, &root_ref) {
-                if may_move {
-                  let (moved, new_path) = move_file(&resource, &move_path, &root_ref);
+                if may_copy {
+                  let (copied, new_path) = copy_file(&resource, &target_path, &root_ref);
+                  if copied {
+                    resource.set_target(new_path.as_str());
+                  }
+                } else if may_move {
+                  let (moved, new_path) = move_file(&resource, &target_path, &root_ref);
                   if moved {
-                    resource.set_move_target(new_path.as_str());
+                    resource.set_target(new_path.as_str());
                   }
                 } else if may_delete {
                   if let Ok(_ok) = remove_file(resource.path_ref()) {
@@ -64,6 +70,14 @@ pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &Criteria
 }
 
 fn move_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &Option<DirEntry>) -> (bool, String) {
+  copy_move_file(resource, target, root_ref, true)
+}
+
+fn copy_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &Option<DirEntry>) -> (bool, String) {
+  copy_move_file(resource, target, root_ref, false)
+}
+
+fn copy_move_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &Option<DirEntry>, move_mode: bool) -> (bool, String) {
   let mut moved = false;
   let mut new_path_str = "".to_string();
   if let Some(mp) = target {
@@ -84,8 +98,14 @@ fn move_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &O
    }
    if has_parent {
     let new_path = Path::new(new_path_str.as_str());
-    if let Ok(_success) = rename(resource.path_ref(), new_path) {
-      moved = true;
+    if move_mode {
+      if let Ok(_success) = rename(resource.path_ref(), new_path) {
+        moved = true;
+      }
+    } else {
+      if let Ok(_success) = copy(resource.path_ref(), new_path) {
+        moved = true;
+      }
     }
    }
   }
