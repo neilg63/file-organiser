@@ -13,6 +13,7 @@ mod path_info;
 mod criteria;
 mod matches;
 mod run;
+mod manage;
 
 use crate::path_info::PathInfo;
 use crate::resource_row::*;
@@ -39,7 +40,6 @@ fn main() {
         let details = DetailLevel::new(&args.list, &args.groups, &args.void);
         let resource_tree = scan_directory(&path_info.canonical, &details, &criteria, false);
         criteria.show();
-        
         if criteria.delete_with_prompt() {
             let num_matched_files = resource_tree.num_files();
             if num_matched_files > 0 {
