@@ -56,7 +56,7 @@ fn main() {
                 if criteria.create_target() {
                     resource_tree.run(criteria.action, Some(criteria.target_info().path));
                 } else {
-                     cprintln!("<red>New target directory could be created</red>");
+                     cprintln!("<red>New target directory ({}) could be created</red>", criteria.target_ref());
                 }
             } else {
                 cprintln!("{}", criteria.action.to_not_past());
