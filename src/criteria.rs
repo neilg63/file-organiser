@@ -1,6 +1,9 @@
 use crate::args::Args;
 use crate::utils::*;
 use crate::matches::{MatchBounds, string_ends_with};
+use crate::path_info::PathInfo;
+use std::fs::create_dir_all;
+use std::path::{Path, PathBuf};
 use color_print::{cprintln,cformat};
 
 #[derive(Debug, Copy, Clone)]
@@ -15,6 +18,32 @@ pub enum ActionMode {
   Copy,
   Delete,
   DirectDelete // unprompted
+}
+
+impl ActionMode {
+  pub fn to_past_string(&self, not_mode: bool) -> String {
+    let prefix = if not_mode { "not "} else { ""};
+    match self {
+      ActionMode::List => cformat!("<yellow>{}{}</yellow>", prefix, "listed"),
+      ActionMode::Move => cformat!("<cyan>{}{}</cyan>", prefix, "moved"),
+      ActionMode::Copy => cformat!("<green>{}{}</green>", prefix, "copied"),
+      ActionMode::Delete | ActionMode::DirectDelete => cformat!("<red>{}{}</red>", prefix, "deleted"),
+    }
+  }
+  pub fn to_past(&self) -> String {
+    self.to_past_string(false)
+  }
+
+  pub fn to_not_past(&self) -> String {
+    self.to_past_string(true)
+  }
+
+  pub fn delete_confirmed(&self) -> bool {
+    match self {
+      ActionMode::DirectDelete => true,
+      _ => false
+    }
+  }
 }
 
 #[derive(Debug, Clone)]
@@ -32,6 +61,7 @@ pub struct Criteria {
   pub max_age: f64,
   pub show_hidden: bool,
   pub action: ActionMode,
+  pub may: ActionMode,
   pub target: Option<String>,
 }
 
@@ -95,7 +125,7 @@ impl Criteria {
       ActionMode::List
     };
 
-    let match_mode = if args.regex_mode { MatchMode::Simple } else { MatchMode::Regex };
+    let match_mode = if args.regex_mode { MatchMode::Regex } else { MatchMode::Simple };
     let show_hidden = args.hidden;
     
     Criteria { 
@@ -112,7 +142,8 @@ impl Criteria {
       max_age: after,
       show_hidden,
       action,
-      target
+      target,
+      may: ActionMode::List
     }
   }
 
@@ -136,12 +167,51 @@ impl Criteria {
     self.max_size() > self.min_size()
   }
 
-/*   pub fn show_prompt(&self) -> bool {
-    match self.action {
-      ActionMode::Delete => true,
-      _ => false,
+  pub fn target_info(&self) -> PathInfo {
+    if let Some(tg) = self.target.clone() {
+      PathInfo::new(tg.clone().as_str())
+    } else {
+      PathInfo::new_empty()
     }
-  } */
+  }
+
+  pub fn has_target(&self) -> bool {
+    self.target_info().exists
+  }
+
+  pub fn create_target(&self) -> bool {
+    if let Some(tg) = self.target.clone() {
+      let new_parent_path = Path::new(&tg).to_owned();
+      if let Ok(_created) = create_dir_all(new_parent_path) {
+        true
+      } else {
+        false
+      }
+    } else {
+      false
+    }
+  }
+
+  pub fn apply_action_permissions(&mut self) -> Option<Box<PathBuf>> {
+    let mut target_path: Option<Box<PathBuf>> = None;
+    let delete_confirmed = self.action.delete_confirmed();
+    if self.move_or_copy_mode() {
+      let move_dir_info = self.target_info();
+      if move_dir_info.exists {
+        target_path = Some(move_dir_info.path);
+        if self.copy_mode() {
+          self.set_may_copy();
+        } else {
+          self.set_may_move();
+        }
+      }
+    } else if self.delete_mode() {
+      if self.delete_mode() && delete_confirmed {
+        self.set_may_delete();
+      }
+    }
+    target_path
+  }
 
   pub fn has_size_limits(&self) -> bool {
     self.min_size() > 0 || self.has_max_size()
@@ -175,11 +245,48 @@ impl Criteria {
     }
   }
 
-  pub fn target_ref(&self) -> String {
+  pub fn set_may_move(&mut self) {
+    self.may = ActionMode::Move;
+  }
+
+  pub fn set_may_copy(&mut self) {
+    self.may = ActionMode::Copy;
+  }
+
+  pub fn set_may_delete(&mut self) {
+    self.may = ActionMode::Delete;
+  }
+
+  pub fn move_or_copy_mode(&self) -> bool {
+    self.move_mode() || self.copy_mode()
+  }
+
+  pub fn may_copy(&self) -> bool {
+    match self.may {
+      ActionMode::Copy => true,
+      _ => false
+    }
+  }
+
+  pub fn may_move(&self) -> bool {
+    match self.may {
+      ActionMode::Move => true,
+      _ => false
+    }
+  }
+
+  pub fn may_delete(&self) -> bool {
+    match self.may {
+      ActionMode::Delete => true,
+      _ => false
+    }
+  }
+
+  pub fn target_ref(&self) -> Box<String> {
     if let Some(tg) = self.target.clone() {
-      tg.clone()
+      Box::new(tg)
     } else {
-      "".to_owned()
+      Box::new( "".to_owned())
     }
   }
 

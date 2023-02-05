@@ -54,6 +54,16 @@ impl PathInfo {
     }
   }
 
+  pub fn new_empty() -> Self {
+    PathInfo {
+      path: Box::new(Path::new("").to_owned()),
+      canonical: "".to_owned(),
+      exists: false,
+      input: "".to_owned(),
+      pattern: None
+    }
+  }
+
   pub fn new_from_args(args: &Args) -> Self {
     let curr_ref = "".to_owned();
     let path_args = args.path.clone().unwrap_or(vec![".".to_string()]);

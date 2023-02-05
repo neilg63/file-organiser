@@ -1,12 +1,15 @@
 use crate::utils::*;
 use walkdir::{DirEntry};
-use std::path::{Path};
+use std::path::{Path, PathBuf};
 use color_print::{cprintln, cformat};
 extern crate chrono;
 use chrono::prelude::*;
 use std::{os::unix::prelude::MetadataExt, collections::HashMap};
+use std::fs::{remove_file};
+use crate::manage::{move_file, copy_file};
 use crate::matches::*;
 use crate::criteria::*;
+use crate::utils::{pluralize_64, smart_size};
 
 #[derive(Debug, Clone)]
 pub struct DetailLevel {
@@ -24,11 +27,6 @@ impl DetailLevel {
         }
     }
 }
-
-pub enum Action {
-
-}
-
 
 #[derive(Debug, Clone)]
 pub struct ResourceRow {
@@ -282,8 +280,8 @@ impl ExtensionStats {
 #[derive(Debug, Clone)]
 pub struct ResourceTree {
   parent: Option<DirEntry>,
-  directories: Vec<Box<ResourceSet>>,
-  max_depth: u8
+  pub directories: Vec<Box<ResourceSet>>,
+  pub max_depth: u8,
 }
 
 impl ResourceTree {
@@ -561,6 +559,60 @@ impl ResourceTree {
       }
       cprintln!("{: <12} <cyan>{}</cyan> (limit: {})", "max depth", self.max_depth_scanned(), self.max_depth);
     }
+  }
+
+  pub fn run(&self, action: ActionMode, target: Option<Box<PathBuf>>) {
+    let root_ref = self.parent.clone();
+    let mut num = 0u64;
+    let mut size = 0u64;
+    for directory in &self.directories {
+      if self.parent.is_some() {
+        if directory.as_ref().depth() < self.max_depth {
+          for mut resource in directory.resources.clone() {
+            let file_size = resource.size();
+            let mut success = false;
+            match action {
+               ActionMode::Copy => {
+                let (copied, target_path) = copy_file(&resource, &target, &root_ref);
+                if copied {
+                  resource.set_target(&target_path);
+                  success = true;
+                }
+              },
+               ActionMode::Move => {
+                let (moved, target_path) = move_file(&resource, &target, &root_ref);
+                if moved {
+                  resource.set_target(&target_path);
+                  success = true;
+                }
+              },
+              ActionMode::DirectDelete | ActionMode::Delete => {
+                if let Ok(_success) = remove_file(resource.path_ref()) {
+                  resource.set_deleted();
+                  success = true;
+                }                
+              },
+              _ => {}
+            }
+            if success {
+              num += 1;
+              size += file_size;
+            }
+          }
+        }
+      }
+    }
+    match action {
+      ActionMode::Move | ActionMode::Copy  => {
+        let mut target_path = "".to_string();
+        if let Some(tg_path) = target {
+          target_path = format!(" to {}", tg_path.to_str().unwrap_or(""));
+        }
+        cprintln!("{} {} {} ({}){}", action.to_past(), num, pluralize_64("file", "s", num), smart_size(size), target_path);
+      },
+      _ => ()
+    }
+    
   }
 
 }
