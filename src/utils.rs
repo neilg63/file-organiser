@@ -1,4 +1,4 @@
-use walkdir::{DirEntry};
+use walkdir::DirEntry;
 use std::path::{Path, MAIN_SEPARATOR};
 use std::time::UNIX_EPOCH;
 use size::Size;
@@ -35,7 +35,7 @@ pub fn extract_extensions<'a>(ext_list: &str) -> Vec<String> {
 }
 
 pub fn extract_from_list<'a>(str_list: &str) -> Vec<String> {
-  if str_list.clone().len() > 0 { str_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
+  if str_list.len() > 0 { str_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
 }
 
 pub fn extract_move_target(move_opt: Option<String>) -> (String, bool) {

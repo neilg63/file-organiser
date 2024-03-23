@@ -1,4 +1,4 @@
-use regex::Regex;
+use string_patterns::*;
 use crate::criteria::MatchMode;
 
 #[derive(Debug, Copy,Clone)]
@@ -9,7 +9,6 @@ pub enum MatchBounds {
 }
 
 pub fn match_string(source: String, pattern: &str, case_insensitive: bool, bounds: MatchBounds, mode: MatchMode) -> bool {
-  let prefix = if case_insensitive { "(?i)" } else { "" };
   let start_bounds = match bounds {
     MatchBounds::Start => if pattern.starts_with("^") { "" } else { "^" },
     _ => ""
@@ -20,11 +19,10 @@ pub fn match_string(source: String, pattern: &str, case_insensitive: bool, bound
   };
   let parsed_pattern = match mode {
     MatchMode::Simple => pattern.replace(".", "\\.").replace("*", ".*"),
-    _ => pattern.clone().to_owned()
+    _ => pattern.to_owned()
   };
-  let corrected_pattern = [prefix, start_bounds, parsed_pattern.as_str(), end_bounds].join("");
-  let re = Regex::new(corrected_pattern.as_str()).unwrap();
-  re.is_match(source.as_str())
+  let corrected_pattern = [start_bounds, parsed_pattern.as_str(), end_bounds].concat();
+  source.pattern_match(&corrected_pattern, case_insensitive)
 }
 
 

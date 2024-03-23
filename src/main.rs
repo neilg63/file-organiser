@@ -1,6 +1,6 @@
 extern crate chrono;
 use std::io::Write;
-use clap::{Parser};
+use clap::Parser;
 use args::Args;
 use color_print::cprintln;
 use utils::pluralize_64;

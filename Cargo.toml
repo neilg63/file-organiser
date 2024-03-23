@@ -1,16 +1,18 @@
 [package]
-name = "smartmove"
+name = "file-organiser"
 version = "0.1.0"
 edition = "2021"
-
+repository = "https://github.com/neilg63/file-organiser"
+categories = ["text-processing", "parsing"]
+license = "GPL-2.0-or-later WITH Bison-exception-2.2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 dotenv = "0.15.0"
-clap = { version = "4.0.32", features = ["derive", "cargo"] }
-cmd_lib = "1.3.0"
-walkdir = "2"
-chrono = "0.4"
-color-print = "0.3.4"
+clap = { version = "4.5.3", features = ["derive", "cargo"] }
+cmd_lib = "1.9.3"
+walkdir = "2.*"
+chrono = "0.4.*"
+color-print = "0.3.5"
 size = "0.4.1"
-regex = "1.7.1"
+string-patterns = "0.3.5"

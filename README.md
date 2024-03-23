@@ -1,37 +1,42 @@
-# SmartMove Quick Bulk File Management Utility
+# FileOrganiser Quick Bulk File Management Utility
 
-Smartmove is a command line file management tool. It lets you list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range.
+FileOrganiser (fileorg) is a command line tool that lets you quickly list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range.
+
 It does not seek to replace common utilities such as _ls_, (_dir_) and _find_ combined with _mv_ and _rm_ (_move_ or _del_), but provides a more transparent overview and streamlined workflow when managing large volumes of files.
 
-This utility is still under development and should be used with caution. I have added the _move_ and _delete_ functionaliy, but still need to improve feedback and test on different file systems and operating systems. The application leverages contributed packages which are all cross-platform and should work on recent versions of Linux, Mac and Windows.
+This crate is still under development and I welcome feedback on its performance with different file systems. The utility uses the cross-platform [WalkDir](https://crates.io/crates/walkdir) crate and should work on recent versions of Linux, Mac and Windows.
+
+I have mainly used the development on Linux servers
 
 ## Primary use cases
 
 - Summarise file directory contents by size, age and extensions (-g flag)
 - Filter file listings by age, size, extension(s) and/or file name pattern
 - Move filtered files to another directory
-- Delete filtered files (prompted without -f flag)
+- Delete filtered files (prompted without the -f flag)
 
-## Drawbacks
+## Known Issues
 
 - Reading deeply nested directories with large numbers of files can be slow. The default max depth is thus set to 5. If you just want to find out the total disk usage, use `du -ch --max-depth 1` instead.
 - If the target path ends in a filename with a wildcard, the command line interpreter will expand it internally into an array all matching file names. This is inefficient for 100 or more matching file names. Instead use the `-e jpeg,jpg` extension or `-p file_name_pattern` options when filtering by name or extension on thousands of files.
 
-The following command will give you an overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days
+The following command will give you an overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days.
 
-`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30`
+These examples assume a system wide alias of *fileorg*
+
+`fileorg -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30`
 
 The -l flag reveals individual file entries with their age, date, type and relative path.
 
-`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l`
+`fileorg -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l`
 
 Should you wish to move these files to a target directory, respecting the original nested file structure, add a --move flag.
 
-`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --move /extended-drive/media`
+`fileorg -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --move /extended-drive/media`
 
 Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stands for max depth)
 
-`smartmove -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --delete`
+`fileorg -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30  -l --delete`
 
 ## Arguments
 
@@ -60,5 +65,9 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - First ensure you have installed the [Rust Cargo compiler](https://doc.rust-lang.org/cargo/getting-started/installation.html) for your operating system
 - checkout out the repository and change into its directory
 - Run `cargo build --release`
-- The executable will be at `target/release/smartmove`
-- Add an alias to the file or ideally move it into a directory already in your system's export path. On Linux and Mac, this may be `/usr/local/bin`.
+- The executable will be at `target/release/file-organiser`
+- Add an alias to the file-organiser, e.g. file-org, or add a symbolic link to it a directory already in your system's export path.
+
+### Dev Notes
+
+This is an alpha release. 
