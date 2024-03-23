@@ -11,6 +11,7 @@ use crate::manage::{move_file, copy_file};
 use crate::criteria::*;
 use crate::utils::{pluralize_64, smart_size};
 
+/// Defines the details level of the file overview
 #[derive(Debug, Clone)]
 pub struct DetailLevel {
     pub show_files: bool,
@@ -18,6 +19,7 @@ pub struct DetailLevel {
     pub show_void_directories: bool,
 }
 
+/// Simple constructor from boolean arguments
 impl DetailLevel {
     pub fn new (show_files: &bool, show_extension_groups: &bool, show_void_directories: &bool) -> Self {
         DetailLevel { 
@@ -28,6 +30,7 @@ impl DetailLevel {
     }
 }
 
+/// Defines the core information about a file or directory
 #[derive(Debug, Clone)]
 pub struct ResourceRow {
     pub file: DirEntry,
@@ -37,6 +40,7 @@ pub struct ResourceRow {
     pub deleted: bool,
 }
 
+/// The default constructor works with a DirEntry object from WalkDir
 impl ResourceRow {
     pub fn new(file: &DirEntry) -> Self {
         ResourceRow { 
@@ -189,6 +193,7 @@ impl ResourceRow {
 
 }
 
+/// Defines a folder structure relative to its parent and its depth from the start directory, but without nested child folders
 #[derive(Debug, Clone)]
 pub struct ResourceSet {
   pub parent: DirEntry,
@@ -261,6 +266,7 @@ impl ResourceSet {
 
 }
 
+/// Data set about extension usage
 #[derive(Debug, Clone)]
 pub struct ExtensionStats {
   pub key: String,
@@ -274,6 +280,7 @@ impl ExtensionStats {
   }
 }
 
+/// Flattened Directory tree, with nested subidrectories listed after their parents
 #[derive(Debug, Clone)]
 pub struct ResourceTree {
   parent: Option<DirEntry>,
@@ -302,19 +309,6 @@ impl ResourceTree {
     }
   }
 
- /*  pub fn curr_sub_dir(&mut self) -> Option<Box<&mut ResourceSet>> {
-    if self.directories.len() > 1 {
-      let last_opt = self.directories.last_mut();    
-       if last_opt.is_some() {
-        Some(Box::new(last_opt.unwrap().as_mut()))
-       } else {
-        None
-       }
-    } else {
-      None
-    }
-  } */
-
    pub fn matched_sub_dir(&mut self, row: &ResourceRow) -> Option<Box<&mut ResourceSet>> {
     if self.directories.len() > 1 {
       let full_path = row.directory_path_string();
@@ -323,19 +317,6 @@ impl ResourceTree {
       None
     }
   }
-
-/*   pub fn matched_sub_dir_ref(&mut self, file: &DirEntry) -> Option<Box<&mut ResourceSet>> {
-    if self.directories.len() > 1 {
-      if let Some(parent) = self.parent.clone() {
-        let full_path = path_to_string(parent.to_owned().path());
-        self.get_matched_sub(full_path)
-      } else {
-        None
-      }
-    } else {
-      None
-    }
-  } */
 
   fn get_matched_sub(&mut self, full_path: String) -> Option<Box<&mut ResourceSet>> {
     let matched_opt = self.directories.iter_mut().find(|rs| rs.full_path_string() == full_path);
@@ -357,12 +338,6 @@ impl ResourceTree {
       let _ = &curr_dir.push(row);
     }
   }
-
-/*    pub fn add_sub_to_sub(&mut self, folder: &DirEntry) {
-    if let Some(curr_dir) = self.matched_sub_dir_ref(folder) {
-      let _ = &curr_dir.push_sub(folder);
-    }
-  } */
 
   pub fn add_root(&mut self, parent: &DirEntry) {
     self.parent = Some(parent.to_owned());

@@ -1,16 +1,19 @@
 use std::fs::{rename, copy, create_dir_all};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
-use walkdir::{DirEntry};
+use walkdir::DirEntry;
 use crate::resource_row::*;
 
+/// Move a file to another directory
 pub fn move_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &Option<DirEntry>) -> (bool, String) {
   copy_move_file(resource, target, root_ref, true)
 }
 
+/// Copy a file to another directory
 pub fn copy_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &Option<DirEntry>) -> (bool, String) {
   copy_move_file(resource, target, root_ref, false)
 }
 
+/// Common function for moving or copying a file. Much of the validation is the same
 fn copy_move_file(resource: &ResourceRow, target: &Option<Box<PathBuf>>, root_ref: &Option<DirEntry>, move_mode: bool) -> (bool, String) {
   let mut moved = false;
   let mut new_path_str = "".to_string();

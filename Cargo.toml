@@ -1,7 +1,7 @@
 [package]
 name = "file-organiser"
 description = "Command line file manager to list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range."
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 repository = "https://github.com/neilg63/file-organiser"
 categories = ["text-processing", "parsing"]

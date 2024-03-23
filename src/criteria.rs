@@ -47,6 +47,8 @@ impl ActionMode {
   }
 }
 
+/// Defines the criteria used to scan directories and filter files
+/// by age, size, extension and/or name patterns
 #[derive(Debug, Clone)]
 pub struct Criteria {
   pub sizes: (u64, u64),

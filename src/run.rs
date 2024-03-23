@@ -4,6 +4,8 @@ use crate::resource_row::*;
 use crate::criteria::*;
 use crate::manage::{move_file, copy_file};
 
+/// Scan the directory and subdirectory to the max specified depth (5 by default)
+/// and apply filters such as age, file size, extension or file name patterns
 pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &mut Criteria) -> ResourceTree {
     let mut root_ref:Option<DirEntry> = None;
     let mut resource_tree: ResourceTree = ResourceTree::new(criteria.max_depth);

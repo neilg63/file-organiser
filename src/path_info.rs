@@ -3,6 +3,7 @@ use std::env;
 use crate::args::Args;
 use crate::utils::{is_full_path,path_string_to_file_name,path_string_to_head};
 
+/// Overview of a resource path
 #[derive(Debug, Clone)]
 pub struct PathInfo {
   pub path: Box<PathBuf>,
@@ -12,12 +13,13 @@ pub struct PathInfo {
   pub pattern: Option<String>,
 }
 
-pub fn parse_expanded_path_args(paths: &Vec<String>) -> String {
+fn parse_expanded_path_args(paths: &Vec<String>) -> String {
   let names: Vec<String> = paths.into_iter().map(|p| path_string_to_file_name(p)).collect();
   let head = path_string_to_head(paths.get(0).unwrap());
   format!("{}({})", head, names.join("|"))
 }
 
+/// Build path information from std::path::Path
 impl PathInfo {
   pub fn new(in_str: &str) -> Self {
     let mut path = Path::new(in_str);
@@ -54,6 +56,7 @@ impl PathInfo {
     }
   }
 
+  /// Default empty constructor
   pub fn new_empty() -> Self {
     PathInfo {
       path: Box::new(Path::new("").to_owned()),
@@ -64,6 +67,7 @@ impl PathInfo {
     }
   }
 
+  /// Build from command line arguments
   pub fn new_from_args(args: &Args) -> Self {
     let curr_ref = "".to_owned();
     let path_args = args.path.clone().unwrap_or(vec![".".to_string()]);
