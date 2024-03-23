@@ -1,4 +1,4 @@
-use string_patterns::*;
+use string_patterns::PatternMatch;
 use crate::criteria::MatchMode;
 
 #[derive(Debug, Copy,Clone)]
@@ -27,5 +27,5 @@ pub fn match_string(source: String, pattern: &str, case_insensitive: bool, bound
 
 
 pub fn string_ends_with(source: &str, pattern: &str) -> bool {
-  match_string(source.to_owned(), &pattern.to_owned(), false, MatchBounds::End,MatchMode::Regex)
+  match_string(source.to_owned(), pattern, false, MatchBounds::End,MatchMode::Regex)
 }

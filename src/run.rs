@@ -1,4 +1,4 @@
-use std::fs::{remove_file};
+use std::fs::remove_file;
 use walkdir::{WalkDir, DirEntry};
 use crate::resource_row::*;
 use crate::criteria::*;

@@ -1,11 +1,11 @@
 use crate::utils::*;
-use walkdir::{DirEntry};
+use walkdir::DirEntry;
 use std::path::{Path, PathBuf};
 use color_print::{cprintln, cformat};
 extern crate chrono;
 use chrono::prelude::*;
 use std::{os::unix::prelude::MetadataExt, collections::HashMap};
-use std::fs::{remove_file};
+use std::fs::remove_file;
 use crate::manage::{move_file, copy_file};
 use crate::matches::*;
 use crate::criteria::*;
@@ -95,7 +95,7 @@ impl ResourceRow {
 
     pub fn matches(&self, pattern: &Option<String>, bounds: MatchBounds, mode: MatchMode) -> bool {
       if let Some(pattern_str) = pattern {
-        match_string(self.file_name(), pattern_str, true, bounds, mode) 
+        match_string(self.file_name(), &pattern_str, true, bounds, mode) 
       } else {
         true
       }

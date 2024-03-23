@@ -1,4 +1,8 @@
-# FileOrganiser Quick Bulk File Management Utility
+[![mirror](https://img.shields.io/badge/mirror-github-blue)](https://github.com/neilg63/file-organiser)
+[![crates.io](https://img.shields.io/crates/v/file-organiser.svg)](https://crates.io/crates/file-organiser)
+[![docs.rs](https://docs.rs/file-organiser/badge.svg)](https://docs.rs/file-organiser)
+
+# FileOrganiser: Quick Bulk File Management Utility
 
 FileOrganiser (fileorg) is a command line tool that lets you quickly list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range.
 
