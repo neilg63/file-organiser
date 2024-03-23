@@ -10,7 +10,7 @@ It does not seek to replace common utilities such as _ls_, (_dir_) and _find_ co
 
 This crate is still under development and I welcome feedback on its performance with different file systems. The utility uses the cross-platform [WalkDir](https://crates.io/crates/walkdir) crate and should work on recent versions of Linux, Mac and Windows.
 
-I have mainly used the development on Linux servers
+I have mainly used the development version on Linux servers to reorganise uploaded media files. Although it can only work within one file system at a time, it has no problems with mounted block storage volumes or S3 object-storage buckets that may use different file systems from the host operating system.
 
 ## Primary use cases
 
