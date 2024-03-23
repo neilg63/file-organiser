@@ -550,9 +550,9 @@ checksum = "9fed904c7fb2856d868b92464fc8fa597fce366edea1a9cbfaa8cb5fe080bd6d"
 
 [[package]]
 name = "string-patterns"
-version = "0.3.5"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "569867b3cda62524f103acf45692aa61dca5a154165aa9c65501c1572590b015"
+checksum = "3a2d3e4cfc8444274e8621df13970db77a4b3ab1f9efa08f0625bdef5ab047b3"
 dependencies = [
  "regex",
 ]

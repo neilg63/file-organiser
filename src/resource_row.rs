@@ -1,4 +1,5 @@
 use crate::utils::*;
+use string_patterns::Regex;
 use walkdir::DirEntry;
 use std::path::{Path, PathBuf};
 use color_print::{cprintln, cformat};
@@ -7,7 +8,6 @@ use chrono::prelude::*;
 use std::{os::unix::prelude::MetadataExt, collections::HashMap};
 use std::fs::remove_file;
 use crate::manage::{move_file, copy_file};
-use crate::matches::*;
 use crate::criteria::*;
 use crate::utils::{pluralize_64, smart_size};
 
@@ -93,9 +93,9 @@ impl ResourceRow {
       self.file.path()
     }
 
-    pub fn matches(&self, pattern: &Option<String>, bounds: MatchBounds, mode: MatchMode) -> bool {
-      if let Some(pattern_str) = pattern {
-        match_string(self.file_name(), &pattern_str, true, bounds, mode) 
+    pub fn matches(&self, pattern: &Option<Regex>) -> bool {
+      if let Some(re) = pattern {
+        re.to_owned().is_match(&self.file_name())
       } else {
         true
       }
@@ -132,17 +132,14 @@ impl ResourceRow {
         self.is_in_day_range(&criteria) 
         && self.is_in_size_range(&criteria.sizes)
         && self.has_valid_extension(&criteria.include_extensions, &criteria.exclude_extensions)
-        && (!criteria.has_pattern() || self.matches(&criteria.pattern, criteria.bounds, criteria.match_mode))
-        && (!criteria.has_omit_pattern() || self.matches(&criteria.exclude_pattern, criteria.bounds, criteria.match_mode) == false)
+        && (!criteria.has_pattern() || self.matches(&criteria.pattern))
+        && (!criteria.has_omit_pattern() || self.matches(&criteria.exclude_pattern) == false)
         && self.show_if_hidden(criteria.show_hidden, root_ref)
     }
 
     pub fn show_if_hidden(&self, show_hidden: bool, root_ref: &Option<DirEntry>) -> bool {
       show_hidden || (self.file_name().starts_with(".") || self.relative_parts(root_ref).into_iter().any(|s| s.starts_with("."))) == false
     }
-/*     pub fn day_display(&self) -> String {
-        format!("{: >9}", format!("{:.2}", self.days_old()))
-    } */
 
     pub fn age_display(&self) -> String {
         seconds_to_day_hours_min_secs(self.seconds_old())

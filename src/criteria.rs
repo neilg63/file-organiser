@@ -1,10 +1,11 @@
 use crate::args::Args;
 use crate::utils::*;
-use crate::matches::{MatchBounds, string_ends_with};
+use crate::matches::{build_matcher, MatchBounds};
 use crate::path_info::PathInfo;
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 use color_print::{cprintln,cformat};
+use string_patterns::{PatternMatch, Regex};
 
 #[derive(Debug, Copy, Clone)]
 pub enum MatchMode {
@@ -52,8 +53,8 @@ pub struct Criteria {
   pub include_extensions: Vec<String>,
   pub exclude_extensions: Vec<String>,
   pub exclude_directories: Vec<String>,
-  pub pattern: Option<String>,
-  pub exclude_pattern: Option<String>,
+  pub pattern: Option<Regex>,
+  pub exclude_pattern: Option<Regex>,
   pub match_mode: MatchMode,
   pub bounds: MatchBounds,
   pub max_depth: u8,
@@ -73,7 +74,7 @@ impl Criteria {
     let mut before_ref = if has_before_range { before_parts.get(0).unwrap().to_owned() } else { "".to_owned() };
     // use either -a, --after value for min. age or first value in the before range
     let after_ref = if has_before_range { before_parts.get(1).unwrap().to_owned() } else { args.after.to_owned() };
-    if has_before_range && !string_ends_with(&before_ref, "[mdhdwy]") && string_ends_with(&after_ref, "[mdhdwy]") {
+    if has_before_range && before_ref.pattern_match_ci("[mdhdwy]$") && after_ref.pattern_match_ci("[mdhdwy]$") {
       let suffix = extract_first_suffix_letter(&after_ref);
       before_ref = format!("{},{}", before_ref, suffix);
     }
@@ -98,17 +99,23 @@ impl Criteria {
     let has_end_pattern = !has_start_pattern && args.ends_with.len() > 0;
     let pattern_str = if has_start_pattern { args.starts_with.clone() } else if has_end_pattern { args.ends_with.clone() } else { args.pattern.clone() };
     
+    let match_mode = if args.regex_mode { MatchMode::Regex } else { MatchMode::Simple };
+
+    let bounds = if has_start_pattern { MatchBounds::Start } else if has_end_pattern { MatchBounds::End } else { MatchBounds::Open };
+    
     let pattern = if file_pattern.is_some() { 
-      file_pattern
+      build_matcher(&file_pattern.unwrap(), true, bounds, match_mode)
     } else if pattern_str.len() > 0 {
-      Some(pattern_str.clone())
+      build_matcher(&pattern_str, true, bounds, match_mode)
     } else { 
       None
     };
 
-    let bounds = if has_start_pattern { MatchBounds::Start } else if has_end_pattern { MatchBounds::End } else { MatchBounds::Open };
-    
-    let exclude_pattern = if args.omit_pattern.len() > 0 { Some(args.omit_pattern.clone()) } else { None };
+    let exclude_pattern = if args.omit_pattern.len() > 0 { 
+      build_matcher(&args.omit_pattern, true, bounds, match_mode)
+    } else {
+      None
+    };
     
     let delete_mode = !move_mode && args.delete;
 
@@ -125,7 +132,7 @@ impl Criteria {
       ActionMode::List
     };
 
-    let match_mode = if args.regex_mode { MatchMode::Regex } else { MatchMode::Simple };
+    
     let show_hidden = args.hidden;
     
     Criteria { 
@@ -340,7 +347,7 @@ impl Criteria {
       let mut parts: Vec<String> = vec![];
       if self.has_pattern() {
         if let Some(pattern) = self.pattern.clone() {
-          let short_pattern = to_short_pattern(&pattern);
+          let short_pattern = to_short_pattern(&pattern.to_string());
           parts.push(cformat!("matching <cyan>{}</cyan>", short_pattern));
         }
       }
