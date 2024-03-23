@@ -2,7 +2,7 @@
 [![crates.io](https://img.shields.io/crates/v/file-organiser.svg)](https://crates.io/crates/file-organiser)
 [![docs.rs](https://docs.rs/file-organiser/badge.svg)](https://docs.rs/file-organiser)
 
-# FileOrganiser: Quick Bulk File Management Utility
+# *FileOrganiser*: Informative File Management Utility
 
 FileOrganiser (fileorg) is a command line tool that lets you quickly list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range.
 
@@ -23,6 +23,7 @@ I have mainly used the development on Linux servers
 
 - Reading deeply nested directories with large numbers of files can be slow. The default max depth is thus set to 5. If you just want to find out the total disk usage, use `du -ch --max-depth 1` instead.
 - If the target path ends in a filename with a wildcard, the command line interpreter will expand it internally into an array all matching file names. This is inefficient for 100 or more matching file names. Instead use the `-e jpeg,jpg` extension or `-p file_name_pattern` options when filtering by name or extension on thousands of files.
+- The current implementation has to scan all directories and files before applying post-filters such as pattern matching. The standard *find . -name '[pattern]'* is much faster if all you need to do to find a file.
 
 The following command will give you an overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days.
 
