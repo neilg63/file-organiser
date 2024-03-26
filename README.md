@@ -76,13 +76,13 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 ### Screenshots
 
 Basic listing with the -g option to show stats by extension:
-![Screenshot 1](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-1.png)
+![Screenshot 1](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-1.png?raw=true)
 
 Show only png files older than 2 years (-b before, -e extension):
-![Screenshot 2](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-2.png)
+![Screenshot 2](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-2.png?raw=true)
 
 Show full listing of png files older than 2 years and larger than 50MB (-b before, -e extension, -s size, -l full listing):
-![Screenshot 2](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-3.png)
+![Screenshot 2](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-3.png?raw=true)
 
 ### Dev Notes
 
