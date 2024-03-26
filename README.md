@@ -82,7 +82,7 @@ Show only png files older than 2 years (-b before, -e extension):
 ![Screenshot 2](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-2.png)
 
 Show full listing of png files older than 2 years and larger than 50MB (-b before, -e extension, -s size, -l full listing):
-![Screenshot 2](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-2.png)
+![Screenshot 2](https://github.com/neilg63/file-organiser/blob/main/screenshots/file-org-3.png)
 
 ### Dev Notes
 
