@@ -86,4 +86,4 @@ Show full listing of png files older than 2 years and larger than 50MB (-b befor
 
 ### Dev Notes
 
-This is an alpha release. 
+This is an alpha release. If anyone finds this useful, I may package it for release for the major operating systems and make all textual output localisable. 
