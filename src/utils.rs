@@ -4,20 +4,22 @@ use std::time::UNIX_EPOCH;
 use size::Size;
 use std::fs;
 
-pub fn is_full_path(path_arg: &str) -> bool {
+/// Utility functions
+
+pub(crate) fn is_full_path(path_arg: &str) -> bool {
     path_arg.starts_with("/") || path_arg.starts_with("~/")
 }
 
-pub fn current_timestamp() -> i64 {
+pub(crate) fn current_timestamp() -> i64 {
   chrono::offset::Utc::now().timestamp()
 }
 
-pub fn smart_size(byte_size: u64) -> String {
+pub(crate) fn smart_size(byte_size: u64) -> String {
   let size = Size::from_bytes(byte_size);
   size.to_string()
 }
 
-pub fn extract_extension(file: &DirEntry) -> String {
+pub(crate) fn extract_extension(file: &DirEntry) -> String {
     let file_ext = file.path().extension();
     if let Some(ext) = file_ext { 
         if let Some(ext_str) = ext.to_str() {
@@ -30,20 +32,20 @@ pub fn extract_extension(file: &DirEntry) -> String {
     }
 }
 
-pub fn extract_extensions<'a>(ext_list: &str) -> Vec<String> {
+pub(crate) fn extract_extensions<'a>(ext_list: &str) -> Vec<String> {
   extract_from_list(ext_list)
 }
 
-pub fn extract_from_list<'a>(str_list: &str) -> Vec<String> {
+pub(crate) fn extract_from_list<'a>(str_list: &str) -> Vec<String> {
   if str_list.len() > 0 { str_list.split(",").into_iter().map(|s| s.to_owned()).collect() } else { vec![] }
 }
 
-pub fn extract_move_target(move_opt: Option<String>) -> (String, bool) {
+pub(crate) fn extract_move_target(move_opt: Option<String>) -> (String, bool) {
   let move_target = move_opt.unwrap_or("".to_owned());
   (move_target.clone(), move_target.len() > 0)
 }
 
-pub fn extract_timestamp(file: &DirEntry) -> u64 {
+pub(crate) fn extract_timestamp(file: &DirEntry) -> u64 {
     let mut ts = 0u64;
     if let Ok(meta) = file.metadata() {
         if let Ok(mod_time) = meta.modified() {
@@ -55,7 +57,7 @@ pub fn extract_timestamp(file: &DirEntry) -> u64 {
     ts
 }
 
-pub fn is_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
+pub(crate) fn is_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
     if extensions.len() > 0 {
         extensions.iter().any(|e| matches_empty_extension_ref(e, ext))
     } else {
@@ -63,7 +65,7 @@ pub fn is_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
     }
 }
 
-pub fn is_not_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
+pub(crate) fn is_not_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {
     extensions.iter().any(|e| matches_empty_extension_ref(e, ext)) == false
 }
 
@@ -71,7 +73,7 @@ fn matches_empty_extension_ref(match_ext: &str, file_ext: &str) -> bool {
   match_ext == file_ext || (match_ext == "_" && file_ext == "")
 }
 
-pub fn numeric_string_to_f64(num_chars: &Vec<char>) -> f64 {
+pub(crate) fn numeric_string_to_f64(num_chars: &Vec<char>) -> f64 {
     let min_str = num_chars.iter().collect::<String>();
     if let Ok(min_val) = min_str.parse::<f64>() {
         min_val
@@ -80,7 +82,7 @@ pub fn numeric_string_to_f64(num_chars: &Vec<char>) -> f64 {
     }
 }
 
-pub fn num_unit_to_bytes_u64(num: f64, unit: char) -> u64 {
+pub(crate) fn num_unit_to_bytes_u64(num: f64, unit: char) -> u64 {
     let unit_multiplier = match unit {
         'k' => 1024f64,
         'm' => 1024f64 * 1024f64,
@@ -90,7 +92,7 @@ pub fn num_unit_to_bytes_u64(num: f64, unit: char) -> u64 {
     (num * unit_multiplier) as u64
 }
 
-pub fn extract_size_val(num_chars: &Vec<char>, unit: char) -> u64 {
+pub(crate) fn extract_size_val(num_chars: &Vec<char>, unit: char) -> u64 {
     let mut int_val = 0u64;
     if num_chars.len() > 0 {
         let num_val = numeric_string_to_f64(&num_chars);
@@ -101,11 +103,11 @@ pub fn extract_size_val(num_chars: &Vec<char>, unit: char) -> u64 {
     int_val
 }
 
-pub fn extract_string_parts(str_val: &str) -> Vec<String> {
+pub(crate) fn extract_string_parts(str_val: &str) -> Vec<String> {
   str_val.to_owned().split("-").into_iter().map(|s| s.to_owned()).collect::<Vec<String>>()
 }
 
-pub fn extract_first_suffix_letter(str_val: &str) -> char {
+pub(crate) fn extract_first_suffix_letter(str_val: &str) -> char {
   let first_char = str_val.to_owned().to_lowercase().chars().into_iter().find(|c| c.is_ascii_alphabetic());
   if let Some(char) = first_char {
     char
@@ -115,7 +117,7 @@ pub fn extract_first_suffix_letter(str_val: &str) -> char {
 }
 
 
-pub fn extract_age(size_str: &str) -> f64 {
+pub(crate) fn extract_age(size_str: &str) -> f64 {
   let chars: Vec<char> = size_str.to_lowercase().chars().into_iter().collect();
   let mut num = 0f64;
   let mut num_chars: Vec<char> = vec![];
@@ -147,7 +149,7 @@ pub fn extract_age(size_str: &str) -> f64 {
   num / div
 }
 
-pub fn extract_sizes(size_str: &str) -> (u64, u64) {
+pub(crate) fn extract_sizes(size_str: &str) -> (u64, u64) {
     let mut min = 0u64;
     let mut max = 0u64;
     let ref_str = size_str.trim().to_lowercase();
@@ -212,15 +214,15 @@ pub fn extract_sizes(size_str: &str) -> (u64, u64) {
     (min, max)
 }
 
-pub fn size_display(size: u64, prefix: &str) -> String {
+pub(crate) fn size_display(size: u64, prefix: &str) -> String {
     if size > 0 { format!("{} {}", prefix, smart_size(size)) } else { "".to_string() }
 }
 
-pub fn to_relative_parts(current: &DirEntry, root: &Option<DirEntry>) -> Vec<String> {
+pub(crate) fn to_relative_parts(current: &DirEntry, root: &Option<DirEntry>) -> Vec<String> {
   path_to_relative_parts(current.path(), root)
 }
 
-pub fn path_to_relative_parts(current_path: &Path, root: &Option<DirEntry>) -> Vec<String> {
+pub(crate) fn path_to_relative_parts(current_path: &Path, root: &Option<DirEntry>) -> Vec<String> {
     if let Some(root_ref) = root {
         let root_comps = root_ref.path().components().into_iter().collect::<Vec<_>>();
         let num_root_parts = root_comps.len();
@@ -239,7 +241,7 @@ pub fn path_to_relative_parts(current_path: &Path, root: &Option<DirEntry>) -> V
     }
 }
 
-pub fn get_num_subdirectories(parent: &DirEntry) -> usize {
+pub(crate) fn get_num_subdirectories(parent: &DirEntry) -> usize {
   let mut num_subs:usize = 0;
   let result: Result<fs::ReadDir, std::io::Error>  = fs::read_dir(parent.clone().into_path());
   if let Ok(rd) = result {
@@ -254,16 +256,16 @@ pub fn get_num_subdirectories(parent: &DirEntry) -> usize {
   num_subs
 }
 
-pub fn path_to_string(ref_path: &Path) -> String {
+pub(crate) fn path_to_string(ref_path: &Path) -> String {
   let parts = ref_path.components().into_iter().map(|c| c.as_os_str().to_str().unwrap_or("")).collect::<Vec<_>>();
   parts.join("/")
 }
 
-pub fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
+pub(crate) fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
   path_to_relative_path(current.path(), root)
 }
 
-pub fn path_to_relative_path(current_path: &Path, root: &Option<DirEntry>) -> String {
+pub(crate) fn path_to_relative_path(current_path: &Path, root: &Option<DirEntry>) -> String {
   let parts = path_to_relative_parts(current_path, root);
     if parts.len() > 0 {
         parts.join("/").to_owned()
@@ -272,19 +274,19 @@ pub fn path_to_relative_path(current_path: &Path, root: &Option<DirEntry>) -> St
     }
 }
 
-pub fn directory_ref_starts_with_separator(path_ref: &str) -> bool {
+pub(crate) fn directory_ref_starts_with_separator(path_ref: &str) -> bool {
   path_ref.starts_with(MAIN_SEPARATOR)
 }
 
-pub fn to_os_directory_string(dirs: &Vec<String>) -> String {
+pub(crate) fn to_os_directory_string(dirs: &Vec<String>) -> String {
   format!("{}{}",MAIN_SEPARATOR, dirs.join(MAIN_SEPARATOR.to_string().as_str()))
 }
 
-pub fn strings_contain_str(dirs: &Vec<String>, segment: &str) -> bool {
+pub(crate) fn strings_contain_str(dirs: &Vec<String>, segment: &str) -> bool {
   dirs.into_iter().any(|d2| segment.to_owned() == d2.to_owned())
 }
 
-pub fn is_not_excluded_dir(resource: &DirEntry, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
+pub(crate) fn is_not_excluded_dir(resource: &DirEntry, e_dirs: &Vec<String>, root_ref: &Option<DirEntry>) -> bool {
   if e_dirs.len() > 0 {
     let dirs = to_relative_parts(resource, root_ref);
     e_dirs.into_iter().any(|d| {
@@ -299,12 +301,12 @@ pub fn is_not_excluded_dir(resource: &DirEntry, e_dirs: &Vec<String>, root_ref: 
   }
 }
 
-pub fn is_not_in_hidden_dir(resource: &DirEntry, root_ref: &Option<DirEntry>) -> bool {
+pub(crate) fn is_not_in_hidden_dir(resource: &DirEntry, root_ref: &Option<DirEntry>) -> bool {
   let dirs = to_relative_parts(resource, root_ref);
   dirs.into_iter().any(|d| d.starts_with(".")) == false
 }
 
-pub fn extract_day_ref_pairs(days: f64) -> (f64, String) {
+pub(crate) fn extract_day_ref_pairs(days: f64) -> (f64, String) {
   let mut unit = "day";
   let mut num = days;
   if days < 0.5 {
@@ -325,7 +327,7 @@ pub fn extract_day_ref_pairs(days: f64) -> (f64, String) {
   (num, unit.to_owned())
 }
 
-pub fn smart_dec_format(num: f64) -> String {
+pub(crate) fn smart_dec_format(num: f64) -> String {
   let num_fmt = format!("{:.3}", num);
   let num_parts = num_fmt.split(".").into_iter().collect::<Vec<&str>>();
   let base_num = num_parts.get(0).unwrap().to_owned();
@@ -348,7 +350,7 @@ pub fn smart_dec_format(num: f64) -> String {
   }
 }
 
-pub fn days_age_display(min: f64, max: f64) -> String {
+pub(crate) fn days_age_display(min: f64, max: f64) -> String {
   let has_min = min > 0f64;
   let has_max = max > min;
   if has_min || has_max {
@@ -364,7 +366,7 @@ pub fn days_age_display(min: f64, max: f64) -> String {
   }
 }
 
-pub fn days_between_display(min: f64, max: f64) -> String {
+pub(crate) fn days_between_display(min: f64, max: f64) -> String {
   let (start_num, start_unit, _spl) = to_time_unit_pairs(min);
   let (_end_num, end_unit) = extract_day_ref_pairs(max);
   let start_unit_text = if start_unit != end_unit { days_to_day_hours_min_secs(min) } else { start_num };
@@ -372,24 +374,24 @@ pub fn days_between_display(min: f64, max: f64) -> String {
   format!("between {} and {} old", start_unit_text, end_unit_text)
 }
 
-pub fn days_part_display(days: f64, is_after: bool) -> String {
+pub(crate) fn days_part_display(days: f64, is_after: bool) -> String {
   let start = if is_after { "newer"} else { "older" };
   format!("{} than {}", start, days_unit_display(days))
 }
 
-pub fn days_unit_display(days: f64) -> String {
+pub(crate) fn days_unit_display(days: f64) -> String {
   let unit_text = days_to_day_hours_min_secs(days);
   format!("{} old", unit_text)
 }
 
-pub fn to_time_unit_pairs(days: f64) -> (String, String, String) {
+pub(crate) fn to_time_unit_pairs(days: f64) -> (String, String, String) {
   let pl = if days == 1f64 { "" } else { "s"};
   let (num, unit) = extract_day_ref_pairs(days);
   let num_display = smart_dec_format(num);
   (num_display, unit, pl.to_owned())
 }
 
-pub fn pluralize_64(single_form: &str, plural_form: &str, count: u64) -> String {
+pub(crate) fn pluralize_64(single_form: &str, plural_form: &str, count: u64) -> String {
   if count == 1 {
     single_form.to_owned()
   } else {
@@ -401,7 +403,7 @@ pub fn pluralize_64(single_form: &str, plural_form: &str, count: u64) -> String 
   }
 }
 
-pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
+pub(crate) fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   let secs_per_hour = 3600;
   let secs_per_day = secs_per_hour * 24;
   let has_days = seconds >= secs_per_day;
@@ -440,12 +442,12 @@ pub fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
 }
 
 
-pub fn days_to_day_hours_min_secs(days: f64) -> String {
+pub(crate) fn days_to_day_hours_min_secs(days: f64) -> String {
   let secs = days * 86400f64;
   seconds_to_day_hours_min_secs(secs as u64)
 }
 
-pub fn path_string_to_file_name(path_ref: &str) -> String {
+pub(crate) fn path_string_to_file_name(path_ref: &str) -> String {
   if let Some(last_part) = path_ref.split(MAIN_SEPARATOR).last() {
     last_part.to_owned()
   } else {
@@ -453,7 +455,7 @@ pub fn path_string_to_file_name(path_ref: &str) -> String {
   }
 }
 
-pub fn path_string_to_head(path_ref: &str) -> String {
+pub(crate) fn path_string_to_head(path_ref: &str) -> String {
   let parts:Vec<&str> = path_ref.split(MAIN_SEPARATOR).into_iter().collect();
   let num = parts.len();
   if num > 1 {
@@ -464,7 +466,7 @@ pub fn path_string_to_head(path_ref: &str) -> String {
   }
 }
 
-pub fn to_short_pattern(pattern: &str) -> String {
+pub(crate) fn to_short_pattern(pattern: &str) -> String {
   if pattern.len() > 32 && pattern.contains("|") && pattern.contains("(") { 
     let head = pattern.split("|").into_iter().take(2).collect::<Vec<&str>>().join("|");
     format!("{}|...)", head)

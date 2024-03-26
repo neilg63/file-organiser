@@ -73,6 +73,17 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - The executable will be at `target/release/file-organiser`
 - Add an alias to the file-organiser, e.g. file-org, or add a symbolic link to it a directory already in your system's export path.
 
+### Screenshots
+
+Basic listing with the -g option to show stats by extension:
+![Screenshot 1](https://github.com/neilg63/file-organiser/screenshots/file-org-1.png)
+
+Show only png files older than 2 years (-b before, -e extension):
+![Screenshot 2](https://github.com/neilg63/file-organiser/screenshots/file-org-2.png)
+
+Show full listing of png files older than 2 years and larger than 50MB (-b before, -e extension, -s size, -l full listing):
+![Screenshot 2](https://github.com/neilg63/file-organiser/screenshots/file-org-2.png)
+
 ### Dev Notes
 
 This is an alpha release. 

@@ -1,14 +1,14 @@
 extern crate chrono;
 
-mod args;
-mod resource_row;
-mod utils;
-mod path_info;
-mod criteria;
-mod matches;
-mod run;
-mod start;
-mod manage;
+mod args; // Manage command line arguments
+mod resource_row; // Manage flattened directory contents
+mod utils; // Miscellaneous functions
+mod path_info; // Custom path info
+mod criteria; // Scan criteria and operations
+mod matches; // Build optional regular expression for pattern matching
+mod run; // Scan the work directory after processing all options
+mod start; // Initialise the utility after validating core arguments
+mod manage; // Handle copy, move and delete operations
 
 use crate::start::init;
 
