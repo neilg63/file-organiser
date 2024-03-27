@@ -504,29 +504,25 @@ impl ResourceTree {
     cprintln!("{: <12} <green>{}</green>{}", "total files", num_files, sub_dir_info);
     if num_files > 0 {
       let (min_file, max_file) = self.get_oldest_newest_files();
-      let mut old_new_parts:Vec<String> = vec![];
       if let Some(min_resource) = min_file {
-        old_new_parts.push(cformat!("newest: <green>{}</green> ({})", min_resource.age_display(), min_resource.file_name()));
+        let oldest_text = cformat!("<green>{}</green> ({})", min_resource.age_display(), min_resource.file_name());
+        cprintln!("{: <12} {}", "newest", oldest_text);
       }
       if let Some(max_resource) = max_file {
-        old_new_parts.push(cformat!("oldest: <green>{}</green> ({})",   max_resource.age_display(), max_resource.file_name()));
+        let newest_text = cformat!("<green>{}</green> ({})",   max_resource.age_display(), max_resource.file_name());
+        cprintln!("{: <12} {}", "oldest", newest_text);
       }
-      if old_new_parts.len() > 0 {
-        cprintln!("{: <12} {}", "age range", old_new_parts.join(", "));
-      }
-
       cprintln!("{: <12} <cyan>{}</cyan>", "tot. size", self.smart_size());
-      let mut max_min_parts:Vec<String> = vec![];
-      if num_files > 2 {
+      if num_files > 1 {
         let (min_file, max_file) = self.get_min_max_files();
+
         if let Some(min_resource) = min_file {
-          max_min_parts.push(cformat!("min. <cyan>{}</cyan> ({})", min_resource.smart_size(), min_resource.file_name()));
+          let min_size_text = cformat!("<cyan>{}</cyan> ({})", min_resource.smart_size(), min_resource.file_name());
+          cprintln!("{: <12} {}", "min. size", min_size_text);
         }
         if let Some(max_resource) = max_file {
-          max_min_parts.push(cformat!("max. <cyan>{}</cyan> ({})",   max_resource.smart_size(), max_resource.file_name()));
-        }
-        if max_min_parts.len() > 0  {
-          cprintln!("{: <12} {}", "size range", max_min_parts.join(", "));
+          let max_size_text = cformat!("<cyan>{}</cyan> ({})",   max_resource.smart_size(), max_resource.file_name());
+          cprintln!("{: <12} {}", "max. size", max_size_text);
         }
       }
       cprintln!("{: <12} <cyan>{}</cyan> (limit: {})", "max depth", self.max_depth_scanned(), self.max_depth);
