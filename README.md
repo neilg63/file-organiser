@@ -71,7 +71,7 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - checkout out the repository and change into its directory
 - Run `cargo build --release`
 - The executable will be at `target/release/file-organiser`
-- Add an alias to the file-organiser, e.g. file-org, or add a symbolic link to it a directory already in your system's export path.
+- Add an alias to the file-organiser, e.g. **fileorg**, or add a symbolic link to it a directory already in your system's export path.
 
 ### Screenshots
 
