@@ -116,7 +116,7 @@ pub(crate) fn extract_first_suffix_letter(str_val: &str) -> char {
   }
 }
 
-
+/// Extract the age as a 64-bi float day values from text paraneter with a unit suffix
 pub(crate) fn extract_age(size_str: &str) -> f64 {
   let chars: Vec<char> = size_str.to_lowercase().chars().into_iter().collect();
   let mut num = 0f64;
@@ -403,6 +403,7 @@ pub(crate) fn pluralize_64(single_form: &str, plural_form: &str, count: u64) -> 
   }
 }
 
+/// Convert seconds an unsigned 64-bit integer to a display string
 pub(crate) fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   let secs_per_hour = 3600;
   let secs_per_day = secs_per_hour * 24;
@@ -429,7 +430,7 @@ pub(crate) fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
       format!("{:.0}{}", hours, "h")
     }
   } else if has_minutes {
-    let minutes = seconds as f64 / 60.0;
+    let minutes = seconds / 60;
     let secs = seconds % 60;
     if show_seconds && secs != 0u64 {
       format!("{:.0}{} {:.0}{}", minutes, "m", secs, "s")
@@ -441,7 +442,7 @@ pub(crate) fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   }
 }
 
-
+/// Convert days a 64-bit float to a display string
 pub(crate) fn days_to_day_hours_min_secs(days: f64) -> String {
   let secs = days * 86400f64;
   seconds_to_day_hours_min_secs(secs as u64)
@@ -472,5 +473,29 @@ pub(crate) fn to_short_pattern(pattern: &str) -> String {
     format!("{}|...)", head)
   } else {
     pattern.to_owned()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_time_unit_display() {
+    let one_day = 1.0;
+    let unit_3hres = one_day / 8.0;
+    let text_1 = days_to_day_hours_min_secs(unit_3hres);
+    let expected_1 = "3h".to_string();
+    assert_eq!(text_1, expected_1);
+
+    let minute = one_day / 1440.0;
+    let minutes_2m_15s = minute * 2.25;
+    let text_2 = days_to_day_hours_min_secs(minutes_2m_15s);
+    let expected_2 = "2m 15s".to_string();
+    assert_eq!(text_2, expected_2);
+    let minutes_1m_45s = minute * 1.75;
+    let text_3 = days_to_day_hours_min_secs(minutes_1m_45s);
+    let expected_3 = "1m 45s".to_string();
+    assert_eq!(text_3, expected_3);
   }
 }
