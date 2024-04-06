@@ -86,4 +86,6 @@ Show full listing of png files older than 2 years and larger than 50MB (-b befor
 
 ### Dev Notes
 
+Version 0.1.6 corrects a reporting bug for files newer than 5 minutes old where 1m 25s was incorrectly reported as 2m 45s owing to rounding anomaly in the f64 to u64 conversion. I added a test for the ```days_to_day_hours_min_secs()``` function.
+
 This is an alpha release. If anyone finds this useful, I may package it for release for the major operating systems and make all textual output localisable. 
