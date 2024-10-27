@@ -298,7 +298,7 @@ dependencies = [
 
 [[package]]
 name = "file-organiser"
-version = "0.1.6"
+version = "0.1.8"
 dependencies = [
  "chrono",
  "clap",
@@ -550,9 +550,9 @@ checksum = "9fed904c7fb2856d868b92464fc8fa597fce366edea1a9cbfaa8cb5fe080bd6d"
 
 [[package]]
 name = "string-patterns"
-version = "0.3.6"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a2d3e4cfc8444274e8621df13970db77a4b3ab1f9efa08f0625bdef5ab047b3"
+checksum = "0dcde48cf7647c0d43431397bcbce9d1523e460b76335e824ae5bc0a0bf256a2"
 dependencies = [
  "regex",
 ]

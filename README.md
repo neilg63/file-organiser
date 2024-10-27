@@ -2,7 +2,7 @@
 [![crates.io](https://img.shields.io/crates/v/file-organiser.svg)](https://crates.io/crates/file-organiser)
 [![docs.rs](https://docs.rs/file-organiser/badge.svg)](https://docs.rs/file-organiser)
 
-# *FileOrganiser*: Informative File Management Utility
+# _FileOrganiser_: Informative File Management Utility
 
 FileOrganiser (fileorg) is a command line tool that lets you quickly list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range.
 
@@ -23,11 +23,11 @@ I have mainly used the development version on Linux servers to reorganise upload
 
 - Reading deeply nested directories with large numbers of files can be slow. The default max depth is thus set to 5. If you just want to find out the total disk usage, use `du -ch --max-depth 1` instead.
 - If the target path ends in a filename with a wildcard, the command line interpreter will expand it internally into an array all matching file names. This is inefficient for 100 or more matching file names. Instead use the `-e jpeg,jpg` extension or `-p file_name_pattern` options when filtering by name or extension on thousands of files.
-- The current implementation has to scan all directories and files before applying post-filters such as pattern matching. The standard *find . -name '[pattern]'* is much faster if all you need to do is to find a file.
+- The current implementation has to scan all directories and files before applying post-filters such as pattern matching. The standard _find . -name '[pattern]'_ is much faster if all you need to do is to find a file.
 
 The following command will give you an overview of all jpeg, gif and png files in the target directories and subdirectories thereof to a max depth of 3 with a minimum file size of 5M and minimum age of 30 days.
 
-These examples assume a system wide alias of *fileorg*
+These examples assume a system wide alias of _fileorg_
 
 `fileorg -e jpg,jpeg,gif,png --size 5M --max-depth 3 --before 30`
 
@@ -86,6 +86,8 @@ Show full listing of png files older than 2 years and larger than 50MB (-b befor
 
 ### Dev Notes
 
-Version 0.1.6 corrects a reporting bug for files newer than 5 minutes old where 1m 25s was incorrectly reported as 2m 45s owing to rounding anomaly in the f64 to u64 conversion. I added a test for the ```days_to_day_hours_min_secs()``` function.
+Version 0.1.6 corrects a reporting bug for files newer than 5 minutes old where 1m 25s was incorrectly reported as 2m 45s owing to rounding anomaly in the f64 to u64 conversion. I added a test for the `days_to_day_hours_min_secs()` function.
 
-This is an alpha release. If anyone finds this useful, I may package it for release for the major operating systems and make all textual output localisable. 
+This is an alpha release. If anyone finds this useful, I may package it for release for the major operating systems and make all textual output localisable.
+
+Version 0.1.8 has a minor bug fix for Windows compatibility.
