@@ -5,7 +5,14 @@ use std::path::{Path, PathBuf};
 use color_print::{cprintln, cformat};
 extern crate chrono;
 use chrono::prelude::*;
-use std::{os::unix::prelude::MetadataExt, collections::HashMap};
+use std::collections::HashMap;
+
+/// conditionally include separate files for linux/unix/mac (unix) and windows
+#[cfg(unix)]
+use std::os::unix::prelude::MetadataExt;
+#[cfg(windows)]
+use std::os::windows::prelude::MetadataExt;
+
 use std::fs::remove_file;
 use crate::manage::{move_file, copy_file};
 use crate::criteria::*;
