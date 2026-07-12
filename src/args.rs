@@ -1,4 +1,5 @@
-use clap::Parser;
+use clap::{Parser, ValueHint};
+use clap_complete::Shell;
 
 fn empty_string() -> String {
   "".to_string()
@@ -15,6 +16,7 @@ pub struct Args {
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub after: String,
   
+  #[arg(value_hint = ValueHint::AnyPath)]
   pub path: Option<Vec<String>>,
 
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
@@ -59,18 +61,22 @@ pub struct Args {
   #[arg(short = 'x', long, value_enum)]
   pub regex_mode: bool,
 
-  #[clap(short, long, value_parser)]
+  #[clap(short, long, value_parser, value_hint = ValueHint::DirPath)]
   pub r#move: Option<String>,
 
-  #[clap(short, long, value_parser)]
+  #[clap(short, long, value_parser, value_hint = ValueHint::DirPath)]
   pub r#copy: Option<String>,
 
   // delete with prompt, abbr. u for unlink
   #[arg(short = 'u', long, value_enum)]
   pub delete: bool,
 
-  // in delete mode, by pass the prompt 
+  // in delete mode, by pass the prompt
   #[arg(short = 'f', long, value_enum)]
   pub force: bool,
+
+  /// Print a shell completion script to stdout and exit, e.g. --completions bash
+  #[arg(long, value_enum, exclusive = true)]
+  pub completions: Option<Shell>,
 
 }

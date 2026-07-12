@@ -1,5 +1,6 @@
 use std::io::Write;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::generate;
 use crate::args::Args;
 use color_print::{cprintln, cformat};
 use crate::utils::pluralize_64;
@@ -24,6 +25,12 @@ pub fn action_prompt(text: &str) -> bool {
 /// Start the command line prompt and parse the core options
 pub fn init() {
   let args = Args::parse();
+  if let Some(shell) = args.completions {
+    let mut cmd = Args::command();
+    let name = cmd.get_name().to_owned();
+    generate(shell, &mut cmd, name, &mut std::io::stdout());
+    return;
+  }
   let path_info = PathInfo::new_from_args(&args);
   let mut criteria = Criteria::new(&args, path_info.pattern);
   if path_info.exists {
