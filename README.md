@@ -8,7 +8,7 @@ FileOrganiser (fileorg) is a command line tool that lets you quickly list, move 
 
 It does not seek to replace common utilities such as _ls_, (_dir_) and _find_ combined with _mv_ and _rm_ (_move_ or _del_), but provides a more transparent overview and streamlined workflow when managing large volumes of files.
 
-This crate is still under development and I welcome feedback on its performance with different file systems. The utility uses the cross-platform [WalkDir](https://crates.io/crates/walkdir) crate and should work on recent versions of Linux, Mac and Windows.
+This crate is still under development and I welcome feedback on its performance with different file systems. The utility uses the cross-platform [WalkDir](https://crates.io/crates/walkdir) crate and builds and runs on recent versions of Linux, Mac and Windows (verified via cross-compilation for `x86_64-pc-windows-gnu`, `x86_64-unknown-linux-gnu` and `x86_64-unknown-linux-musl`).
 
 I have mainly used the development version on Linux servers to reorganise uploaded media files. Although it can only work within one file system at a time, it has no problems with mounted block storage volumes or S3 object-storage buckets that may use different file systems from the host operating system.
 
@@ -64,6 +64,7 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - **--delete, -u** Delete files filtered by the above criteria
 - **--force, -f** Bypass prompt for bulk deletion (useful for cron jobs)
 - **--hidden, -y** Match hidden files and directories, e.g. `.git` as folder or `.gitignore` as a file
+- **--completions** Print a shell completion script for the given shell (`bash`, `zsh`, `fish`, `elvish` or `powershell`) to stdout and exit. See [Shell Completion](#shell-completion) below.
 
 ## Installation
 
@@ -72,6 +73,18 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - Run `cargo build --release`
 - The executable will be at `target/release/file-organiser`
 - Add an alias to the file-organiser, e.g. **fileorg**, or add a symbolic link to it a directory already in your system's export path.
+
+### Shell Completion
+
+Source or target path arguments and flags support tab completion via [clap_complete](https://crates.io/crates/clap_complete). Generate the script for your shell and source it, e.g. in `.bashrc`:
+
+`source <(fileorg --completions bash)`
+
+Substitute `zsh`, `fish`, `elvish` or `powershell` for other shells. The scan path completes to any file or directory, while `--move`/`-m` and `--copy`/`-c` complete to directories only. This only covers local paths for now; completion against remote storage such as S3 will need a dynamic completion engine once that's supported.
+
+### Localization
+
+All output text (headers, labels, prompts, action verbs, unit words) is looked up by machine name rather than hard-coded, with English defaults built into the binary from `src/lang/en.env`. To override any subset of strings, point the `FO_LANG_FILE` environment variable at a file using the same `KEY=value` format; you only need to list the keys you want to change, everything else falls back to English. Templates use positional placeholders (`{0}`, `{1}`, ...) so a translation can reorder values within a sentence.
 
 ### Screenshots
 
@@ -88,6 +101,14 @@ Show full listing of png files older than 2 years and larger than 50MB (-b befor
 
 Version 0.1.6 corrects a reporting bug for files newer than 5 minutes old where 1m 25s was incorrectly reported as 2m 45s owing to rounding anomaly in the f64 to u64 conversion. I added a test for the `days_to_day_hours_min_secs()` function.
 
-This is an alpha release. If anyone finds this useful, I may package it for release for the major operating systems and make all textual output localisable.
+This is an alpha release. If anyone finds this useful, I may package it for release for the major operating systems.
 
 Version 0.1.8 has a minor bug fix for Windows compatibility.
+
+Version 0.2.0 updates all dependencies and includes several fixes and new features:
+
+- Fixed a Windows compile error (`MetadataExt::size()` doesn't exist on Windows; it's `file_size()`), verified with a real cross-compiled and linked build rather than just type-checking.
+- Fixed a bug where `--move`/`-m` to a target directory that didn't exist yet would silently move files into the wrong (parent) directory with no prompt. It now always prompts before creating a missing target, naming the shallowest missing path component.
+- All output text is now localisable via an overridable language file; see [Localization](#localization).
+- Added shell tab completion via `--completions <shell>`; see [Shell Completion](#shell-completion).
+- Various internal performance fixes to avoid unnecessary cloning when summarising large directory trees.
