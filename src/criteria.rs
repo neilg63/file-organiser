@@ -1,11 +1,11 @@
 use crate::args::Args;
 use crate::utils::*;
-use crate::matches::{build_matcher, MatchBounds};
+use crate::matches::{build_match_pattern, MatchBounds};
 use crate::path_info::PathInfo;
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 use color_print::{cprintln,cformat};
-use string_patterns::{PatternMatch, Regex};
+use string_patterns::PatternMatch;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MatchMode {
@@ -55,10 +55,8 @@ pub struct Criteria {
   pub include_extensions: Vec<String>,
   pub exclude_extensions: Vec<String>,
   pub exclude_directories: Vec<String>,
-  pub pattern: Option<Regex>,
-  pub exclude_pattern: Option<Regex>,
-  pub match_mode: MatchMode,
-  pub bounds: MatchBounds,
+  pub pattern: Option<String>,
+  pub exclude_pattern: Option<String>,
   pub max_depth: u8,
   pub min_age: f64,
   pub max_age: f64,
@@ -105,16 +103,16 @@ impl Criteria {
 
     let bounds = if has_start_pattern { MatchBounds::Start } else if has_end_pattern { MatchBounds::End } else { MatchBounds::Open };
     
-    let pattern = if file_pattern.is_some() { 
-      build_matcher(&file_pattern.unwrap(), true, bounds, match_mode)
+    let pattern = if file_pattern.is_some() {
+      build_match_pattern(&file_pattern.unwrap(), bounds, match_mode)
     } else if pattern_str.len() > 0 {
-      build_matcher(&pattern_str, true, bounds, match_mode)
-    } else { 
+      build_match_pattern(&pattern_str, bounds, match_mode)
+    } else {
       None
     };
 
-    let exclude_pattern = if args.omit_pattern.len() > 0 { 
-      build_matcher(&args.omit_pattern, true, bounds, match_mode)
+    let exclude_pattern = if args.omit_pattern.len() > 0 {
+      build_match_pattern(&args.omit_pattern, bounds, match_mode)
     } else {
       None
     };
@@ -144,8 +142,6 @@ impl Criteria {
       exclude_directories,
       pattern,
       exclude_pattern,
-      match_mode,
-      bounds,
       max_depth,
       min_age: before,
       max_age: after,
@@ -349,7 +345,7 @@ impl Criteria {
       let mut parts: Vec<String> = vec![];
       if self.has_pattern() {
         if let Some(pattern) = &self.pattern {
-          let short_pattern = to_short_pattern(&pattern.to_string());
+          let short_pattern = to_short_pattern(pattern);
           parts.push(cformat!("matching <cyan>{}</cyan>", short_pattern));
         }
       }

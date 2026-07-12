@@ -1,5 +1,5 @@
 use crate::utils::*;
-use string_patterns::Regex;
+use string_patterns::PatternMatch;
 use walkdir::DirEntry;
 use std::path::{Path, PathBuf};
 use color_print::{cprintln, cformat};
@@ -108,9 +108,9 @@ impl ResourceRow {
       self.file.path()
     }
 
-    pub fn matches(&self, pattern: &Option<Regex>) -> bool {
-      if let Some(re) = pattern {
-        re.is_match(self.file_name_str())
+    pub fn matches(&self, pattern: &Option<String>) -> bool {
+      if let Some(pat) = pattern {
+        self.file_name_str().pattern_match_ci(pat)
       } else {
         true
       }

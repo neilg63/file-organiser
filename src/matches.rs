@@ -1,4 +1,4 @@
-use string_patterns::{build_regex, Regex};
+use string_patterns::PatternMatch;
 use crate::criteria::MatchMode;
 
 #[derive(Debug, Copy,Clone)]
@@ -8,7 +8,12 @@ pub enum MatchBounds {
   End
 }
 
-pub fn build_matcher(pattern: &str, case_insensitive: bool, bounds: MatchBounds, mode: MatchMode) -> Option<Regex> {
+/// Build the anchored regex pattern string used to match file names against.
+/// Validated up front by probing an empty string via the shared regex cache in
+/// string-patterns, so the pattern is compiled once and reused for every file
+/// matched against it via PatternMatch::pattern_match_ci, rather than file-organiser
+/// building and holding its own Regex.
+pub fn build_match_pattern(pattern: &str, bounds: MatchBounds, mode: MatchMode) -> Option<String> {
   let start_bounds = match bounds {
     MatchBounds::Start => if pattern.starts_with("^") { "" } else { "^" },
     _ => ""
@@ -22,8 +27,8 @@ pub fn build_matcher(pattern: &str, case_insensitive: bool, bounds: MatchBounds,
     _ => pattern.to_owned()
   };
   let corrected_pattern = [start_bounds, parsed_pattern.as_str(), end_bounds].concat();
-  if let Ok(rgx) = build_regex(&corrected_pattern, case_insensitive) {
-    Some(rgx)
+  if "".pattern_match_result(&corrected_pattern, true).is_ok() {
+    Some(corrected_pattern)
   } else {
     None
   }
