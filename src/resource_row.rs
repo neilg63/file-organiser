@@ -24,9 +24,25 @@ fn meta_size(meta: &std::fs::Metadata) -> u64 {
   meta.file_size()
 }
 
-/// One metadata() call (one stat syscall) for both the modified time and
-/// size, rather than two separate calls.
-fn extract_ts_and_size(file: &DirEntry) -> (u64, u64) {
+/// Actual disk usage in bytes (allocated blocks x 512), matching what `du`
+/// reports - as opposed to the apparent size (sum of byte contents) that
+/// size()/meta_size() report. Differs from apparent size because storage is
+/// allocated in fixed-size blocks, so many small files can use noticeably
+/// more disk space than their content bytes would suggest. Windows'
+/// MetadataExt has no equivalent to blocks(), so this falls back to the
+/// apparent size there.
+#[cfg(unix)]
+fn meta_disk_size(meta: &std::fs::Metadata) -> u64 {
+  meta.blocks() * 512
+}
+#[cfg(windows)]
+fn meta_disk_size(meta: &std::fs::Metadata) -> u64 {
+  meta_size(meta)
+}
+
+/// One metadata() call (one stat syscall) for the modified time, apparent
+/// size and disk usage, rather than separate calls for each.
+fn extract_ts_size_and_disk_size(file: &DirEntry) -> (u64, u64, u64) {
   if let Ok(meta) = file.metadata() {
     let mut ts = 0u64;
     if let Ok(mod_time) = meta.modified() {
@@ -34,9 +50,9 @@ fn extract_ts_and_size(file: &DirEntry) -> (u64, u64) {
         ts = ts_val.as_secs();
       }
     }
-    (ts, meta_size(&meta))
+    (ts, meta_size(&meta), meta_disk_size(&meta))
   } else {
-    (0u64, 0u64)
+    (0u64, 0u64, 0u64)
   }
 }
 
@@ -71,6 +87,7 @@ pub struct ResourceRow {
     pub extension: String,
     pub ts: u64,
     pub size: u64,
+    pub disk_size: u64,
     pub target: Option<String>,
     pub deleted: bool,
 }
@@ -78,19 +95,20 @@ pub struct ResourceRow {
 /// The default constructor works with a DirEntry object from WalkDir
 impl ResourceRow {
     pub fn new(file: &DirEntry) -> Self {
-        // A single metadata() call (one stat syscall) yields both the
-        // modified time and the size, instead of stat-ing the file again
-        // every time size() is later called - size() used to do its own
-        // fresh metadata() call on every invocation, and gets called
-        // several times per file across a scan (once during criteria
+        // A single metadata() call (one stat syscall) yields the modified
+        // time, apparent size and disk usage together, instead of stat-ing
+        // the file again every time size() is later called - size() used to
+        // do its own fresh metadata() call on every invocation, and gets
+        // called several times per file across a scan (once during criteria
         // matching, then again for each size summary pass), so this
         // mattered a lot on large trees.
-        let (ts, size) = extract_ts_and_size(file);
+        let (ts, size, disk_size) = extract_ts_size_and_disk_size(file);
         ResourceRow {
             file: file.to_owned(),
             extension: extract_extension(file),
             ts,
             size,
+            disk_size,
             target: None,
             deleted: false,
          }
@@ -131,6 +149,10 @@ impl ResourceRow {
 
     pub fn size(&self) -> u64 {
         self.size
+    }
+
+    pub fn disk_size(&self) -> u64 {
+        self.disk_size
     }
 
     pub fn smart_size(&self) -> String {
@@ -266,6 +288,14 @@ impl ResourceSet {
     let mut size = 0u64;
     for row in &self.resources {
       size += row.size();
+    }
+    size
+  }
+
+  pub fn disk_size(&self) -> u64 {
+    let mut size = 0u64;
+    for row in &self.resources {
+      size += row.disk_size();
     }
     size
   }
@@ -423,6 +453,14 @@ impl ResourceTree {
     size
   }
 
+  pub fn disk_size(&self) -> u64 {
+    let mut size = 0u64;
+    for row in &self.directories {
+      size += row.disk_size();
+    }
+    size
+  }
+
   pub fn get_min_max_files(&self) -> (Option<ResourceRow>, Option<ResourceRow>) {
     let mut min_val = 0;
     let mut max_val = 0;
@@ -497,6 +535,10 @@ impl ResourceTree {
       smart_size(self.size())
   }
 
+  pub fn smart_disk_size(&self) -> String {
+      smart_size(self.disk_size())
+  }
+
   pub fn build_extension_map(&self) -> Vec<ExtensionStats> {
     let mut map: HashMap<String, (u32, u64)> = HashMap::new();
     for directory in &self.directories {
@@ -559,6 +601,7 @@ impl ResourceTree {
         cprintln!("{: <12} {}", t("FO_LABEL_OLDEST"), newest_text);
       }
       cprintln!("{: <12} <cyan>{}</cyan>", t("FO_LABEL_TOTAL_SIZE"), self.smart_size());
+      cprintln!("{: <12} <cyan>{}</cyan>", t("FO_LABEL_DISK_USAGE"), self.smart_disk_size());
       if num_files > 1 {
         let (min_file, max_file) = self.get_min_max_files();
 
