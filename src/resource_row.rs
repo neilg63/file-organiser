@@ -14,6 +14,16 @@ use std::os::unix::prelude::MetadataExt;
 #[cfg(windows)]
 use std::os::windows::prelude::MetadataExt;
 
+/// MetadataExt exposes the file size as size() on Unix but file_size() on Windows
+#[cfg(unix)]
+fn meta_size(meta: &std::fs::Metadata) -> u64 {
+  meta.size()
+}
+#[cfg(windows)]
+fn meta_size(meta: &std::fs::Metadata) -> u64 {
+  meta.file_size()
+}
+
 use std::fs::remove_file;
 use crate::manage::{move_file, copy_file};
 use crate::criteria::*;
@@ -95,7 +105,7 @@ impl ResourceRow {
 
     pub fn size(&self) -> u64 {
         if let Ok(meta) = self.file.metadata() {
-            meta.size()
+            meta_size(&meta)
         } else {
             0u64
         }
