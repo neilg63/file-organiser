@@ -3,6 +3,7 @@ use std::path::{Path, MAIN_SEPARATOR};
 use std::time::UNIX_EPOCH;
 use size::Size;
 use std::fs;
+use crate::lang::{t, tf};
 
 /// Utility functions
 
@@ -322,24 +323,24 @@ pub(crate) fn is_not_in_hidden_dir(resource: &DirEntry, root_ref: &Option<DirEnt
 }
 
 pub(crate) fn extract_day_ref_pairs(days: f64) -> (f64, String) {
-  let mut unit = "day";
+  let mut unit = t("FO_UNIT_DAY");
   let mut num = days;
   if days < 0.5 {
     if days >= 1f64/24f64 {
       num *= 24f64;
-      unit = "hour";
+      unit = t("FO_UNIT_HOUR");
     } else if days >= 1f64/1440f64 {
       num *= 1440f64;
-      unit = "min";
+      unit = t("FO_UNIT_MIN");
     } else {
       num *= 86400f64;
-      unit = "sec";
+      unit = t("FO_UNIT_SEC");
     }
   } else if days > 730.5 {
-    unit = "year";
+    unit = t("FO_UNIT_YEAR");
     num /= 362.25;
   }
-  (num, unit.to_owned())
+  (num, unit)
 }
 
 pub(crate) fn smart_dec_format(num: f64) -> String {
@@ -377,7 +378,7 @@ pub(crate) fn days_age_display(min: f64, max: f64) -> String {
       days_part_display(max, true)
     }
   } else {
-    "All ages".to_owned()
+    t("FO_ALL_AGES")
   }
 }
 
@@ -386,17 +387,17 @@ pub(crate) fn days_between_display(min: f64, max: f64) -> String {
   let (_end_num, end_unit) = extract_day_ref_pairs(max);
   let start_unit_text = if start_unit != end_unit { days_to_day_hours_min_secs(min) } else { start_num };
   let end_unit_text = days_to_day_hours_min_secs(max);
-  format!("between {} and {} old", start_unit_text, end_unit_text)
+  tf("FO_AGE_BETWEEN", &[&start_unit_text, &end_unit_text])
 }
 
 pub(crate) fn days_part_display(days: f64, is_after: bool) -> String {
-  let start = if is_after { "newer"} else { "older" };
-  format!("{} than {}", start, days_unit_display(days))
+  let start = if is_after { t("FO_AGE_NEWER") } else { t("FO_AGE_OLDER") };
+  tf("FO_AGE_THAN", &[&start, &days_unit_display(days)])
 }
 
 pub(crate) fn days_unit_display(days: f64) -> String {
   let unit_text = days_to_day_hours_min_secs(days);
-  format!("{} old", unit_text)
+  tf("FO_AGE_OLD", &[&unit_text])
 }
 
 pub(crate) fn to_time_unit_pairs(days: f64) -> (String, String, String) {
@@ -428,32 +429,36 @@ pub(crate) fn seconds_to_day_hours_min_secs(seconds: u64) -> String {
   let show_minutes = seconds < (secs_per_hour * 6);
   let has_minutes = seconds >= 60;
   let show_seconds = seconds < 60 * 5;
+  let hour_abbr = t("FO_ABBR_HOUR");
+  let min_abbr = t("FO_ABBR_MIN");
+  let sec_abbr = t("FO_ABBR_SEC");
   if has_days {
     let days = seconds as f64 / secs_per_day as f64;
     let hours = (days % 1f64) * 24f64;
+    let day_word = pluralize_64(&t("FO_UNIT_DAY"), &t("FO_SUFFIX_PLURAL_S"), days as u64);
     if show_hours && hours != 0f64 {
-      format!("{:.0} {} {:.0}{}", days, pluralize_64("day", "s", days as u64), hours, "h")
+      format!("{:.0} {} {:.0}{}", days, day_word, hours, hour_abbr)
     } else {
-      format!("{:.0} {}", days, pluralize_64("day", "s", days as u64))
+      format!("{:.0} {}", days, day_word)
     }
   } else if has_hours {
     let hours = seconds as f64 / secs_per_hour as f64;
     let minutes = (hours % 1f64) * 60f64;
     if show_minutes && minutes != 0f64 {
-      format!("{:.0}{} {:.0}{}", hours, "h", minutes, "m")
+      format!("{:.0}{} {:.0}{}", hours, hour_abbr, minutes, min_abbr)
     } else {
-      format!("{:.0}{}", hours, "h")
+      format!("{:.0}{}", hours, hour_abbr)
     }
   } else if has_minutes {
     let minutes = seconds / 60;
     let secs = seconds % 60;
     if show_seconds && secs != 0u64 {
-      format!("{:.0}{} {:.0}{}", minutes, "m", secs, "s")
+      format!("{:.0}{} {:.0}{}", minutes, min_abbr, secs, sec_abbr)
     } else {
-      format!("{:.0}{}", minutes, "m")
+      format!("{:.0}{}", minutes, min_abbr)
     }
   } else {
-    format!("{:.0}{}", seconds, "s")
+    format!("{:.0}{}", seconds, sec_abbr)
   }
 }
 

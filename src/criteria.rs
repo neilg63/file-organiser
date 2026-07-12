@@ -1,11 +1,16 @@
 use crate::args::Args;
 use crate::utils::*;
+use crate::lang::t;
 use crate::matches::{build_match_pattern, MatchBounds};
 use crate::path_info::PathInfo;
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 use color_print::{cprintln,cformat};
 use string_patterns::PatternMatch;
+
+fn action_word(key: &str, not_key: &str, not_mode: bool) -> String {
+  t(if not_mode { not_key } else { key })
+}
 
 #[derive(Debug, Copy, Clone)]
 pub enum MatchMode {
@@ -23,12 +28,11 @@ pub enum ActionMode {
 
 impl ActionMode {
   pub fn to_past_string(&self, not_mode: bool) -> String {
-    let prefix = if not_mode { "not "} else { ""};
     match self {
-      ActionMode::List => cformat!("<yellow>{}{}</yellow>", prefix, "listed"),
-      ActionMode::Move => cformat!("<cyan>{}{}</cyan>", prefix, "moved"),
-      ActionMode::Copy => cformat!("<green>{}{}</green>", prefix, "copied"),
-      ActionMode::Delete | ActionMode::DirectDelete => cformat!("<red>{}{}</red>", prefix, "deleted"),
+      ActionMode::List => cformat!("<yellow>{}</yellow>", action_word("FO_ACTION_LISTED", "FO_ACTION_NOT_LISTED", not_mode)),
+      ActionMode::Move => cformat!("<cyan>{}</cyan>", action_word("FO_ACTION_MOVED", "FO_ACTION_NOT_MOVED", not_mode)),
+      ActionMode::Copy => cformat!("<green>{}</green>", action_word("FO_ACTION_COPIED", "FO_ACTION_NOT_COPIED", not_mode)),
+      ActionMode::Delete | ActionMode::DirectDelete => cformat!("<red>{}</red>", action_word("FO_ACTION_DELETED", "FO_ACTION_NOT_DELETED", not_mode)),
     }
   }
   pub fn to_past(&self) -> String {
@@ -323,14 +327,14 @@ impl Criteria {
 
   pub fn to_text(&self) -> String {
     let action = match self.action {
-      ActionMode::Move => "move to",
-      ActionMode::Copy => "copy to",
+      ActionMode::Move => t("FO_ACTION_MOVE_TO"),
+      ActionMode::Copy => t("FO_ACTION_COPY_TO"),
       ActionMode::Delete => if self.delete_mode() {
-        "delete"
+        t("FO_ACTION_DELETE")
       } else {
-        "list"
+        t("FO_ACTION_LIST")
       },
-      _ => "list"
+      _ => t("FO_ACTION_LIST")
     };
     let target = if self.target_mode() {
         format!(" {}", self.target_ref())
@@ -341,35 +345,35 @@ impl Criteria {
   }
 
   pub fn show(&self) {
-    let min_size_display = size_display(self.min_size(), "min.");
-    let max_size_display = size_display(self.max_size(), "max.");
+    let min_size_display = size_display(self.min_size(), &t("FO_SIZE_PREFIX_MIN"));
+    let max_size_display = size_display(self.max_size(), &t("FO_SIZE_PREFIX_MAX"));
     let has_size_constraint = self.has_size_limits();
-    let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { "[all]".to_owned() };
+    let size_display = if has_size_constraint { format!("{} {}", min_size_display, max_size_display) } else { t("FO_ALL_SIZES") };
     let age_range = days_age_display(self.min_age, self.max_age);
-    cprintln!("<cyan,italics>CRITERIA</cyan,italics>");
+    cprintln!("<cyan,italics>{}</cyan,italics>", t("FO_HEADER_CRITERIA"));
     cprintln!("<yellow>{}</yellow>", age_range);
-    cprintln!("{: <12} <cyan>{}</cyan>", "size range", size_display);
-    let ext_text = if self.include_extensions.len() > 0 { self.include_extensions.join(", ") } else { "[all]".to_owned()  };
-    cprintln!("{: <12} <cyan>{}</cyan>", "extensions", ext_text);
+    cprintln!("{: <12} <cyan>{}</cyan>", t("FO_LABEL_SIZE_RANGE"), size_display);
+    let ext_text = if self.include_extensions.len() > 0 { self.include_extensions.join(", ") } else { t("FO_ALL_EXTENSIONS") };
+    cprintln!("{: <12} <cyan>{}</cyan>", t("FO_LABEL_EXTENSIONS"), ext_text);
     if self.has_pattern() || self.has_omit_pattern() {
       let mut parts: Vec<String> = vec![];
       if self.has_pattern() {
         if let Some(pattern) = &self.pattern {
           let short_pattern = to_short_pattern(pattern);
-          parts.push(cformat!("matching <cyan>{}</cyan>", short_pattern));
+          parts.push(cformat!("{} <cyan>{}</cyan>", t("FO_MATCHING"), short_pattern));
         }
       }
       if self.has_omit_pattern() {
         if let Some(not_pattern) = &self.exclude_pattern {
-          parts.push(cformat!("not matching <cyan>{}</cyan>", not_pattern));
+          parts.push(cformat!("{} <cyan>{}</cyan>", t("FO_NOT_MATCHING"), not_pattern));
         }
       }
       if parts.len() > 0 {
-        cprintln!("{: <12} {}", "file names", parts.join(" and "));
+        cprintln!("{: <12} {}", t("FO_LABEL_FILE_NAMES"), parts.join(&format!(" {} ", t("FO_JOINER_AND"))));
       }
     }
     let action_text = self.to_text();
-    cprintln!("{} <yellow>{: <12}</yellow>", "action", action_text);
+    cprintln!("{} <yellow>{: <12}</yellow>", t("FO_LABEL_ACTION"), action_text);
   }
 
 }

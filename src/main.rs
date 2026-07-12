@@ -1,6 +1,7 @@
 extern crate chrono;
 
 mod args; // Manage command line arguments
+mod lang; // Localisable message strings
 mod resource_row; // Manage flattened directory contents
 mod utils; // Miscellaneous functions
 mod path_info; // Custom path info

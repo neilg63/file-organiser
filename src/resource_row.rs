@@ -1,4 +1,5 @@
 use crate::utils::*;
+use crate::lang::{t, tf};
 use string_patterns::PatternMatch;
 use walkdir::DirEntry;
 use std::path::{Path, PathBuf};
@@ -198,7 +199,7 @@ impl ResourceRow {
 
     pub fn show(&self, root_ref: &Option<DirEntry>) {
       let rel_file_path = self.file_display(root_ref);
-      let file_ref = if self.deleted {  cformat!("<red>{}</red> [del]", rel_file_path) } else { cformat!("<yellow>{}</yellow>", rel_file_path) };
+      let file_ref = if self.deleted {  cformat!("<red>{}</red> {}", rel_file_path, t("FO_DELETED_TAG")) } else { cformat!("<yellow>{}</yellow>", rel_file_path) };
       cprintln!("{: >9}\t<green>{}</green>\t<cyan>{: >9}</cyan>\t{}\t{}\t{}", self.age_display(), self.modified_display(), self.smart_size(), self.extension, self.depth(), file_ref);
     }
 
@@ -258,20 +259,20 @@ impl ResourceSet {
   pub fn num_sub_dirs_display(&self) -> String {
     let num = self.num_subs;
     if num > 0 {
-      let word = pluralize_64("subdir", "s", num as u64);
+      let word = pluralize_64(&t("FO_UNIT_SUBDIR"), &t("FO_SUFFIX_PLURAL_S"), num as u64);
       format!("{} {}", num, word)
     } else {
-      "[no subdirs]".to_owned()
+      t("FO_NO_SUBDIRS")
     }
   }
 
-  pub fn show(&self, root_ref: &Option<DirEntry>, show_files: bool) {  
+  pub fn show(&self, root_ref: &Option<DirEntry>, show_files: bool) {
     if show_files {
       for row in &self.resources {
         row.show(root_ref);
       }
     }
-    let files_word = if self.count() == 1 { "file" } else { "files" };
+    let files_word = pluralize_64(&t("FO_UNIT_FILE"), &t("FO_SUFFIX_PLURAL_S"), self.count() as u64);
     cprintln!("<cyan>{: >8}</cyan> {}\t{: >10}\t{: <10}\t<yellow>{: >9}</yellow>", self.count(), files_word, self.num_sub_dirs_display(), self.smart_size(), self.path_display(root_ref));
   }
 
@@ -373,7 +374,7 @@ impl ResourceTree {
   pub fn num_sub_dirs_display(&self) -> String {
     let num = self.num_sub_dirs();
     if self.num_sub_dirs() > 0 {
-      let word = pluralize_64("subdir", "s", num as u64);
+      let word = pluralize_64(&t("FO_UNIT_SUBDIR"), &t("FO_SUFFIX_PLURAL_S"), num as u64);
       format!("{} {}", self.num_sub_dirs(), word)
     } else {
       "".to_owned()
@@ -487,10 +488,10 @@ impl ResourceTree {
   }
 
   pub fn show_extension_stats(&self) {
-    cprintln!("<cyan,italics>BY EXTENSION</cyan,italics>");
+    cprintln!("<cyan,italics>{}</cyan,italics>", t("FO_HEADER_BY_EXTENSION"));
     for row in self.build_extension_map().into_iter() {
-      let file_word = pluralize_64("file", "s", row.count as u64);
-      let ext_text = if row.key.len() > 0 { row.key } else { "[none]".to_owned() };
+      let file_word = pluralize_64(&t("FO_UNIT_FILE"), &t("FO_SUFFIX_PLURAL_S"), row.count as u64);
+      let ext_text = if row.key.len() > 0 { row.key } else { t("FO_NO_EXTENSION") };
       cprintln!("<yellow>{: >10}</yellow>\t<cyan>{: >9}</cyan> {}\t{}", ext_text, row.count, file_word, smart_size(row.size));
     }
   }
@@ -509,34 +510,35 @@ impl ResourceTree {
       self.show_extension_stats();
     }
     let num_files = self.num_files();
-    cprintln!("<cyan,italics>OVERVIEW</cyan,italics>");
-    cprintln!("{: <12} <yellow>{}</yellow>", "path", self.path_display());
+    cprintln!("<cyan,italics>{}</cyan,italics>", t("FO_HEADER_OVERVIEW"));
+    cprintln!("{: <12} <yellow>{}</yellow>", t("FO_LABEL_PATH"), self.path_display());
     let sub_dir_info = if self.num_sub_dirs() > 0 { format!("\t({})", self.num_sub_dirs_display()) } else { "".to_owned() };
-    cprintln!("{: <12} <green>{}</green>{}", "total files", num_files, sub_dir_info);
+    cprintln!("{: <12} <green>{}</green>{}", t("FO_LABEL_TOTAL_FILES"), num_files, sub_dir_info);
     if num_files > 0 {
       let (min_file, max_file) = self.get_oldest_newest_files();
       if let Some(min_resource) = min_file {
         let oldest_text = cformat!("<green>{}</green> ({})", min_resource.age_display(), min_resource.file_name());
-        cprintln!("{: <12} {}", "newest", oldest_text);
+        cprintln!("{: <12} {}", t("FO_LABEL_NEWEST"), oldest_text);
       }
       if let Some(max_resource) = max_file {
         let newest_text = cformat!("<green>{}</green> ({})",   max_resource.age_display(), max_resource.file_name());
-        cprintln!("{: <12} {}", "oldest", newest_text);
+        cprintln!("{: <12} {}", t("FO_LABEL_OLDEST"), newest_text);
       }
-      cprintln!("{: <12} <cyan>{}</cyan>", "tot. size", self.smart_size());
+      cprintln!("{: <12} <cyan>{}</cyan>", t("FO_LABEL_TOTAL_SIZE"), self.smart_size());
       if num_files > 1 {
         let (min_file, max_file) = self.get_min_max_files();
 
         if let Some(min_resource) = min_file {
           let min_size_text = cformat!("<cyan>{}</cyan> ({})", min_resource.smart_size(), min_resource.file_name());
-          cprintln!("{: <12} {}", "min. size", min_size_text);
+          cprintln!("{: <12} {}", t("FO_LABEL_MIN_SIZE"), min_size_text);
         }
         if let Some(max_resource) = max_file {
           let max_size_text = cformat!("<cyan>{}</cyan> ({})",   max_resource.smart_size(), max_resource.file_name());
-          cprintln!("{: <12} {}", "max. size", max_size_text);
+          cprintln!("{: <12} {}", t("FO_LABEL_MAX_SIZE"), max_size_text);
         }
       }
-      cprintln!("{: <12} <cyan>{}</cyan> (limit: {})", "max depth", self.max_depth_scanned(), self.max_depth);
+      let depth_limit = tf("FO_MAX_DEPTH_LIMIT", &[&self.max_depth.to_string()]);
+      cprintln!("{: <12} <cyan>{}</cyan> {}", t("FO_LABEL_MAX_DEPTH"), self.max_depth_scanned(), depth_limit);
     }
   }
 
@@ -578,9 +580,10 @@ impl ResourceTree {
       ActionMode::Move | ActionMode::Copy  => {
         let mut target_path = "".to_string();
         if let Some(tg_path) = target {
-          target_path = format!(" to {}", tg_path.to_str().unwrap_or(""));
+          target_path = format!(" {}", tf("FO_TO_TARGET", &[tg_path.to_str().unwrap_or("")]));
         }
-        cprintln!("{} {} {} ({}){}", action.to_past(), num, pluralize_64("file", "s", num), smart_size(size), target_path);
+        let file_word = pluralize_64(&t("FO_UNIT_FILE"), &t("FO_SUFFIX_PLURAL_S"), num);
+        cprintln!("{}", tf("FO_RUN_SUMMARY", &[&action.to_past(), &num.to_string(), &file_word, &smart_size(size), &target_path]));
       },
       _ => ()
     }
