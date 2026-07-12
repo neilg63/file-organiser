@@ -448,10 +448,10 @@ impl ResourceTree {
   }
 
   pub fn max_depth_scanned(&self) -> usize {
-    let mut num = 1;
+    let mut num = 0;
     for row in &self.directories {
-      if row.depth > num {
-        num = row.depth + 1;
+      if row.depth <= self.max_depth as usize && row.depth > num {
+        num = row.depth;
       }
     }
     num
@@ -509,7 +509,7 @@ impl ResourceTree {
   pub fn show(&self, details: &DetailLevel) {
     for directory in &self.directories {
       if self.parent.is_some() {
-        if directory.as_ref().depth() < self.max_depth {
+        if directory.as_ref().depth() <= self.max_depth {
           if details.show_void_directories || directory.count() > 0 {
             directory.as_ref().show(&self.parent, details.show_files);
           }
@@ -558,7 +558,7 @@ impl ResourceTree {
     let mut size = 0u64;
     for directory in &self.directories {
       if self.parent.is_some() {
-        if directory.as_ref().depth() < self.max_depth {
+        if directory.as_ref().depth() <= self.max_depth {
           for resource in &directory.resources {
             let file_size = resource.size();
             let mut success = false;

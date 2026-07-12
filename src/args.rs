@@ -43,7 +43,7 @@ pub struct Args {
   #[clap(short, long, value_parser, default_value_t = empty_string()) ]
   pub size: String,
 
-  #[clap(short = 'd', long, value_parser, default_value_t = 5) ]
+  #[clap(short = 'd', long, value_parser, default_value_t = 10) ]
   pub max_depth: u8,
 
   #[arg(short = 'y', long, value_enum)]

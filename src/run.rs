@@ -9,7 +9,10 @@ use crate::manage::{move_file, copy_file};
 pub fn scan_directory(path_str: &str, details: &DetailLevel, criteria: &mut Criteria) -> ResourceTree {
     let mut root_ref:Option<DirEntry> = None;
     let mut resource_tree: ResourceTree = ResourceTree::new(criteria.max_depth);
-    let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(criteria.max_depth as usize).follow_links(true).same_file_system(true);
+    // WalkDir counts the scan root itself as depth 0, so a file directly in the
+    // root is already depth 1: max_depth needs +1 for criteria.max_depth to mean
+    // "N levels of nested subdirectories" as documented, not N-1.
+    let target_dir = WalkDir::new(path_str).min_depth(0).max_depth(criteria.max_depth as usize + 1).follow_links(true).same_file_system(true);
     let target_path = criteria.apply_action_permissions();
     for file in target_dir.into_iter().filter_map(|file| file.ok()) {
         let ft = file.file_type();

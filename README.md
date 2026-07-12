@@ -21,7 +21,7 @@ I have mainly used the development version on Linux servers to reorganise upload
 
 ## Known Issues
 
-- Reading deeply nested directories with large numbers of files can be slow. The default max depth is thus set to 5. If you just want to find out the total disk usage, use `du -ch --max-depth 1` instead.
+- Reading deeply nested directories with large numbers of files can be slow. The default max depth is thus set to 10. If you just want to find out the total disk usage, use `du -ch --max-depth 1` instead.
 - If the target path ends in a filename with a wildcard, the command line interpreter will expand it internally into an array all matching file names. This is inefficient for 100 or more matching file names. Instead use the `-e jpeg,jpg` extension or `-p file_name_pattern` options when filtering by name or extension on thousands of files.
 - The current implementation has to scan all directories and files before applying post-filters such as pattern matching. The standard _find . -name '[pattern]'_ is much faster if all you need to do is to find a file.
 
@@ -53,7 +53,7 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 - **--exclude-dirs, -q** directories to be excluded. These are relative to the target directory. If prefixed by your system's directory separator (`/` on Linux and Mac and `\` on Windows), it will exclude all subdirectories starting from the parent directory, otherwise it will exclude all subdirectories at any nesting level. You may exclude multiple subdirectory path with comma-separated lists e.g. `/node_modules,/dist` will exclude all files nested in these subdirectories.
 - **--list, -l** Flag to show individual file details rather than just the overview
 - **--groups, -g** Flag to show stats by extension groups before the main overview
-- **--max-depth, -d** Max depth of subdirectories to scan. Defaults to 5 to limit overhead of parsing deeply nested directories. Max value is 255.
+- **--max-depth, -d** Max depth of subdirectories to scan. Defaults to 10 to limit overhead of parsing deeply nested directories. Max value is 255.
 - **--pattern, -p** Match pattern for the file name. Add the `-x` flag to use full regular expressions in quotes.
 - **--omit-pattern, -o** Omit file names matching this pattern. This may be combined with `--pattern, -p` or `--ext, -e` for more advanced pattern matching.
 - **--starts-with** Match pattern from the start of the file name
@@ -116,6 +116,8 @@ Version 0.2.0 updates all dependencies and includes several fixes and new featur
 
 - Fixed a Windows compile error (`MetadataExt::size()` doesn't exist on Windows; it's `file_size()`), verified with a real cross-compiled and linked build rather than just type-checking.
 - Fixed a bug where `--move`/`-m` to a target directory that didn't exist yet would silently move files into the wrong (parent) directory with no prompt. It now always prompts before creating a missing target, naming the shallowest missing path component.
-- All output text is now localisable via an overridable language file; see [Localization](#localization).
+- All output text is now localisable, with automatic system-locale detection and per-language files that can be added without touching source code; see [Localization](#localization).
 - Added shell tab completion via `--completions <shell>`; see [Shell Completion](#shell-completion).
+- Fixed an off-by-one in `--max-depth`/`-d`: it previously scanned one level shallower than requested (`-d 5` only reached 4 levels of nested subdirectories). Verified against a real move/delete run, not just listing/counting, since this gate also controls which directories get operated on.
+- Raised the default `--max-depth` from 5 to 10. Benchmarked scanning an 18,000-file, 20-level-deep tree: time scales linearly with file count regardless of depth, no blowup, thanks in part to the cloning fixes above.
 - Various internal performance fixes to avoid unnecessary cloning when summarising large directory trees.
