@@ -85,7 +85,11 @@ impl ResourceRow {
     }
 
     pub fn file_name(&self) -> String {
-      self.file.file_name().to_str().unwrap_or("").to_owned()
+      self.file_name_str().to_owned()
+    }
+
+    pub fn file_name_str(&self) -> &str {
+      self.file.file_name().to_str().unwrap_or("")
     }
 
     pub fn size(&self) -> u64 {
@@ -106,7 +110,7 @@ impl ResourceRow {
 
     pub fn matches(&self, pattern: &Option<Regex>) -> bool {
       if let Some(re) = pattern {
-        re.to_owned().is_match(&self.file_name())
+        re.is_match(self.file_name_str())
       } else {
         true
       }
@@ -149,7 +153,7 @@ impl ResourceRow {
     }
 
     pub fn show_if_hidden(&self, show_hidden: bool, root_ref: &Option<DirEntry>) -> bool {
-      show_hidden || (self.file_name().starts_with(".") || self.relative_parts(root_ref).into_iter().any(|s| s.starts_with("."))) == false
+      show_hidden || (self.file_name_str().starts_with(".") || self.relative_parts(root_ref).into_iter().any(|s| s.starts_with("."))) == false
     }
 
     pub fn age_display(&self) -> String {

@@ -80,7 +80,7 @@ impl PathInfo {
     };
 
     let curr_path = env::current_dir().unwrap().as_os_str().to_str().unwrap().to_string();
-    let path_str = if path_arg == curr_ref { curr_path.clone().to_owned() } else if is_full_path(path_arg.as_str()) { path_arg.to_owned() } else { format!("{}/{}", curr_path, path_arg) };
+    let path_str = if path_arg == curr_ref { curr_path } else if is_full_path(path_arg.as_str()) { path_arg } else { format!("{}/{}", curr_path, path_arg) };
     PathInfo::new(&path_str)
   }
 

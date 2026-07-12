@@ -177,8 +177,8 @@ impl Criteria {
   }
 
   pub fn target_info(&self) -> PathInfo {
-    if let Some(tg) = self.target.clone() {
-      PathInfo::new(tg.clone().as_str())
+    if let Some(tg) = &self.target {
+      PathInfo::new(tg.as_str())
     } else {
       PathInfo::new_empty()
     }
@@ -189,8 +189,8 @@ impl Criteria {
   }
 
   pub fn create_target(&self) -> bool {
-    if let Some(tg) = self.target.clone() {
-      let new_parent_path = Path::new(&tg).to_owned();
+    if let Some(tg) = &self.target {
+      let new_parent_path = Path::new(tg).to_owned();
       if let Ok(_created) = create_dir_all(new_parent_path) {
         true
       } else {
@@ -348,13 +348,13 @@ impl Criteria {
     if self.has_pattern() || self.has_omit_pattern() {
       let mut parts: Vec<String> = vec![];
       if self.has_pattern() {
-        if let Some(pattern) = self.pattern.clone() {
+        if let Some(pattern) = &self.pattern {
           let short_pattern = to_short_pattern(&pattern.to_string());
           parts.push(cformat!("matching <cyan>{}</cyan>", short_pattern));
         }
       }
       if self.has_omit_pattern() {
-        if let Some(not_pattern) = self.exclude_pattern.clone() {
+        if let Some(not_pattern) = &self.exclude_pattern {
           parts.push(cformat!("not matching <cyan>{}</cyan>", not_pattern));
         }
       }
