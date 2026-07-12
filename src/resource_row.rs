@@ -387,10 +387,10 @@ impl ResourceTree {
   pub fn get_min_max_files(&self) -> (Option<ResourceRow>, Option<ResourceRow>) {
     let mut min_val = 0;
     let mut max_val = 0;
-    let mut min_row: Option<ResourceRow> = None;
-    let mut max_row: Option<ResourceRow> = None;
+    let mut min_row: Option<&ResourceRow> = None;
+    let mut max_row: Option<&ResourceRow> = None;
     for row in &self.directories {
-      for resource in row.resources.clone() {
+      for resource in &row.resources {
         let size_val = resource.size();
         if size_val > max_val {
           max_row = Some(resource);
@@ -401,16 +401,16 @@ impl ResourceTree {
         }
       }
     }
-    (min_row, max_row)
+    (min_row.cloned(), max_row.cloned())
   }
 
   pub fn get_oldest_newest_files(&self) -> (Option<ResourceRow>, Option<ResourceRow>) {
     let mut min_val = 0;
     let mut max_val = 0;
-    let mut min_row: Option<ResourceRow> = None;
-    let mut max_row: Option<ResourceRow> = None;
+    let mut min_row: Option<&ResourceRow> = None;
+    let mut max_row: Option<&ResourceRow> = None;
     for row in &self.directories {
-      for resource in row.resources.clone() {
+      for resource in &row.resources {
         let age_val = resource.seconds_old();
         if age_val > max_val {
           max_row = Some(resource);
@@ -421,7 +421,7 @@ impl ResourceTree {
         }
       }
     }
-    (min_row, max_row)
+    (min_row.cloned(), max_row.cloned())
   }
 
   pub fn num_files(&self) -> usize {
