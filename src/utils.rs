@@ -1,6 +1,5 @@
 use walkdir::DirEntry;
 use std::path::{Path, MAIN_SEPARATOR};
-use std::time::UNIX_EPOCH;
 use size::Size;
 use std::fs;
 use crate::lang::{t, tf};
@@ -44,18 +43,6 @@ pub(crate) fn extract_from_list<'a>(str_list: &str) -> Vec<String> {
 pub(crate) fn extract_move_target(move_opt: Option<String>) -> (String, bool) {
   let move_target = move_opt.unwrap_or("".to_owned());
   (move_target.clone(), move_target.len() > 0)
-}
-
-pub(crate) fn extract_timestamp(file: &DirEntry) -> u64 {
-    let mut ts = 0u64;
-    if let Ok(meta) = file.metadata() {
-        if let Ok(mod_time) = meta.modified() {
-            if let Ok(ts_val) = mod_time.duration_since(UNIX_EPOCH) {
-                ts = ts_val.as_secs();
-            }
-        }
-    }
-    ts
 }
 
 pub(crate) fn is_in_extensions(ext: &str, extensions: &Vec<String>) -> bool {

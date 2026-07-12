@@ -24,6 +24,22 @@ fn meta_size(meta: &std::fs::Metadata) -> u64 {
   meta.file_size()
 }
 
+/// One metadata() call (one stat syscall) for both the modified time and
+/// size, rather than two separate calls.
+fn extract_ts_and_size(file: &DirEntry) -> (u64, u64) {
+  if let Ok(meta) = file.metadata() {
+    let mut ts = 0u64;
+    if let Ok(mod_time) = meta.modified() {
+      if let Ok(ts_val) = mod_time.duration_since(std::time::UNIX_EPOCH) {
+        ts = ts_val.as_secs();
+      }
+    }
+    (ts, meta_size(&meta))
+  } else {
+    (0u64, 0u64)
+  }
+}
+
 use std::fs::remove_file;
 use crate::manage::{move_file, copy_file};
 use crate::criteria::*;
@@ -54,6 +70,7 @@ pub struct ResourceRow {
     pub file: DirEntry,
     pub extension: String,
     pub ts: u64,
+    pub size: u64,
     pub target: Option<String>,
     pub deleted: bool,
 }
@@ -61,10 +78,19 @@ pub struct ResourceRow {
 /// The default constructor works with a DirEntry object from WalkDir
 impl ResourceRow {
     pub fn new(file: &DirEntry) -> Self {
+        // A single metadata() call (one stat syscall) yields both the
+        // modified time and the size, instead of stat-ing the file again
+        // every time size() is later called - size() used to do its own
+        // fresh metadata() call on every invocation, and gets called
+        // several times per file across a scan (once during criteria
+        // matching, then again for each size summary pass), so this
+        // mattered a lot on large trees.
+        let (ts, size) = extract_ts_and_size(file);
         ResourceRow {
             file: file.to_owned(),
             extension: extract_extension(file),
-            ts: extract_timestamp(file),
+            ts,
+            size,
             target: None,
             deleted: false,
          }
@@ -104,11 +130,7 @@ impl ResourceRow {
     }
 
     pub fn size(&self) -> u64 {
-        if let Ok(meta) = self.file.metadata() {
-            meta_size(&meta)
-        } else {
-            0u64
-        }
+        self.size
     }
 
     pub fn smart_size(&self) -> String {
