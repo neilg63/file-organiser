@@ -184,12 +184,12 @@ impl ResourceRow {
        self.file.depth()
     }
 
-    pub fn modified_date(&self) -> NaiveDateTime {
-        NaiveDateTime::from_timestamp_opt(self.ts as i64, 0).unwrap()
+    pub fn modified_date(&self) -> Option<NaiveDateTime> {
+        DateTime::from_timestamp(self.ts as i64, 0).map(|dt| dt.naive_local())
     }
 
     pub fn modified_display(&self) -> String {
-        self.modified_date().format("%Y-%m-%d %H:%M:%S").to_string()
+        self.modified_date().map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string()).unwrap_or_else(|| "".to_string())
     }
 
     pub fn show(&self, root_ref: &Option<DirEntry>) {
