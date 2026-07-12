@@ -174,7 +174,7 @@ impl Criteria {
 
   pub fn target_info(&self) -> PathInfo {
     if let Some(tg) = &self.target {
-      PathInfo::new(tg.as_str())
+      PathInfo::new_dir(tg.as_str())
     } else {
       PathInfo::new_empty()
     }
@@ -182,6 +182,16 @@ impl Criteria {
 
   pub fn has_target(&self) -> bool {
     self.target_info().exists
+  }
+
+  /// The shallowest ancestor of the requested move/copy target that does not
+  /// yet exist as a directory, or the full target if there is none.
+  pub fn missing_target_component(&self) -> String {
+    if let Some(tg) = &self.target {
+      first_missing_dir_component(tg)
+    } else {
+      "".to_owned()
+    }
   }
 
   pub fn create_target(&self) -> bool {

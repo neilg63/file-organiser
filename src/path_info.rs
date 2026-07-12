@@ -56,6 +56,33 @@ impl PathInfo {
     }
   }
 
+  /// Build path information for a plain directory path, e.g. a move/copy target.
+  /// Unlike new(), this never backs up to the parent and treats the last
+  /// component as a file-name pattern when the path doesn't exist yet - a
+  /// target directory that doesn't exist is exactly the case callers need to
+  /// detect, not silently reinterpret as an existing parent.
+  pub fn new_dir(in_str: &str) -> Self {
+    let path = Path::new(in_str);
+    let input = in_str.to_owned();
+    let exists = path.is_dir();
+
+    let mut canonical = "".to_owned();
+    if exists {
+        if let Ok(os_path) = path.canonicalize() {
+            if let Some(full_path_str) = os_path.to_str() {
+                canonical = full_path_str.to_owned();
+            }
+        }
+    }
+    PathInfo {
+      path: Box::new(path.to_owned()),
+      canonical,
+      exists,
+      input,
+      pattern: None
+    }
+  }
+
   /// Default empty constructor
   pub fn new_empty() -> Self {
     PathInfo {

@@ -261,6 +261,21 @@ pub(crate) fn path_to_string(ref_path: &Path) -> String {
   parts.join("/")
 }
 
+/// Find the shallowest ancestor of path_str that does not exist as a directory,
+/// e.g. for /home/user123/pictures/2019-09 where only /home exists, this returns
+/// /home/user123, since everything below it also needs to be created.
+pub(crate) fn first_missing_dir_component(path_str: &str) -> String {
+  let path = Path::new(path_str);
+  let mut acc = std::path::PathBuf::new();
+  for comp in path.components() {
+    acc.push(comp);
+    if !acc.is_dir() {
+      return acc.to_str().unwrap_or(path_str).to_owned();
+    }
+  }
+  acc.to_str().unwrap_or(path_str).to_owned()
+}
+
 pub(crate) fn to_relative_path(current: &DirEntry, root: &Option<DirEntry>) -> String {
   path_to_relative_path(current.path(), root)
 }

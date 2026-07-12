@@ -44,7 +44,10 @@ pub fn init() {
               cprintln!("<red>No matched files to delete</red>");
           }
       } else if criteria.move_or_copy_mode() && !criteria.has_target() {
-          if action_prompt(&format!("The directory {} does not exist. Do you want to create it", criteria.target_ref() )) {
+          cprintln!("{: <12} <yellow>{}</yellow>", "target directory", criteria.target_ref());
+          let missing = criteria.missing_target_component();
+          let prompt_text = format!("Target directory {} does not exist. Do you want to create it and all required subdirectories?", missing);
+          if action_prompt(&prompt_text) {
               if criteria.create_target() {
                   resource_tree.run(criteria.action, Some(criteria.target_info().path));
               } else {
