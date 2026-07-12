@@ -61,8 +61,8 @@ pub struct ResourceRow {
 /// The default constructor works with a DirEntry object from WalkDir
 impl ResourceRow {
     pub fn new(file: &DirEntry) -> Self {
-        ResourceRow { 
-            file: file.to_owned(), 
+        ResourceRow {
+            file: file.to_owned(),
             extension: extract_extension(file),
             ts: extract_timestamp(file),
             target: None,
@@ -221,13 +221,11 @@ pub struct ResourceSet {
   pub parent: DirEntry,
   pub resources: Vec<ResourceRow>,
   pub depth: usize,
-  pub num_subs: usize,
 }
 
 impl ResourceSet {
   pub fn new(parent: &DirEntry) -> Self {
-    let num_subs = get_num_subdirectories(parent);
-    ResourceSet { parent: parent.to_owned(), resources: vec![], depth: parent.depth(), num_subs }
+    ResourceSet { parent: parent.to_owned(), resources: vec![], depth: parent.depth() }
   }
 
   pub fn push(&mut self, resource: &ResourceRow) {
@@ -267,7 +265,10 @@ impl ResourceSet {
   }
 
   pub fn num_sub_dirs_display(&self) -> String {
-    let num = self.num_subs;
+    // Computed lazily (rather than eagerly for every directory WalkDir
+    // touches) since this is only ever needed for directories that actually
+    // get displayed.
+    let num = get_num_subdirectories(&self.parent);
     if num > 0 {
       let word = pluralize_64(&t("FO_UNIT_SUBDIR"), &t("FO_SUFFIX_PLURAL_S"), num as u64);
       format!("{} {}", num, word)
@@ -308,11 +309,15 @@ pub struct ResourceTree {
   parent: Option<DirEntry>,
   pub directories: Vec<Box<ResourceSet>>,
   pub max_depth: u8,
+  /// Maps a directory's full path string to its index in `directories`, so
+  /// matched_sub_dir() doesn't have to linearly scan every known directory
+  /// (with a string allocation per candidate) for every single nested file.
+  dir_index: HashMap<String, usize>,
 }
 
 impl ResourceTree {
   pub fn new(max_depth: u8) -> Self {
-    ResourceTree { max_depth, parent: None, directories: vec![] }
+    ResourceTree { max_depth, parent: None, directories: vec![], dir_index: HashMap::new() }
   }
 
   pub fn parent_dir(&mut self) -> Option<Box<&mut ResourceSet>> {
@@ -341,12 +346,8 @@ impl ResourceTree {
   }
 
   fn get_matched_sub(&mut self, full_path: String) -> Option<Box<&mut ResourceSet>> {
-    let matched_opt = self.directories.iter_mut().find(|rs| rs.full_path_string() == full_path);
-    if let Some(matched_box)  = matched_opt {
-      Some(Box::new(matched_box.as_mut()))
-    } else {
-      None
-    }
+    let index = self.dir_index.get(&full_path).copied()?;
+    self.directories.get_mut(index).map(|matched_box| Box::new(matched_box.as_mut()))
   }
 
   pub fn add_to_parent(&mut self, row: &ResourceRow) {
@@ -366,6 +367,7 @@ impl ResourceTree {
   }
 
   pub fn push(&mut self, resource_set: &ResourceSet) {
+    self.dir_index.insert(resource_set.full_path_string(), self.directories.len());
     self.directories.push(Box::new(resource_set.to_owned()));
   }
 
