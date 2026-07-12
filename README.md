@@ -6,7 +6,7 @@
 
 FileOrganiser (fileorg) is a command line tool that lets you quickly list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range.
 
-It does not seek to replace common utilities such as _ls_, (_dir_) and _find_ combined with _mv_ and _rm_ (_move_ or _del_), but provides a more transparent overview and streamlined workflow when managing large volumes of files.
+It does not seek to replace common utilities such as _ls_, (_dir_) and _find_ combined with _mv_ and _rm_ (_move_ or _del_), but provides a more transparent overview and streamlined workflow when managing large volumes of files. For pure disk-usage reporting, `du` remains the gold standard for accurate, full-tree totals, and [dust](https://github.com/bootandy/dust) (11.9k+ stars, actively maintained) is a stable, more visual Rust reimplementation of it. file-organiser's disk-usage summary is a secondary feature that complements its filtering, moving and deleting - it isn't trying to replace either.
 
 This crate is still under development and I welcome feedback on its performance with different file systems. The utility uses the cross-platform [WalkDir](https://crates.io/crates/walkdir) crate and builds and runs on recent versions of Linux, Mac and Windows (verified via cross-compilation for `x86_64-pc-windows-gnu`, `x86_64-unknown-linux-gnu` and `x86_64-unknown-linux-musl`).
 
@@ -19,9 +19,18 @@ I have mainly used the development version on Linux servers to reorganise upload
 - Move filtered files to another directory
 - Delete filtered files (prompted without the -f flag)
 
+## Disk Usage vs Apparent Size
+
+The OVERVIEW summary reports two different size figures:
+
+- **total size** is the apparent size: the sum of each file's content length (`stat`'s `st_size`).
+- **disk usage** is the actual space allocated on disk (blocks x 512 bytes), matching what `du` reports. Storage is allocated in fixed-size blocks, so many small files can use noticeably more disk space than their content bytes suggest - a directory of thousands of tiny files can show a much larger "disk usage" than "total size". This falls back to apparent size on Windows, which has no direct equivalent to Unix's block-count metadata, and it doesn't include the disk space directories themselves consume, so it'll be a close but not exact match for `du`'s total.
+
+Both figures are scoped by `--max-depth`/`-d`, since that value also governs what's eligible to be listed, moved or deleted. This differs from `du --max-depth`, which only limits the *displayed* breakdown - its grand total always reflects the whole tree regardless of depth. With the default max depth now at 10 this is rarely a practical difference, but if you deliberately lower `-d` to skip a large subtree, both size figures will only reflect what was actually scanned. For an authoritative, full-tree total regardless of depth, `du` remains the gold standard - sysadmins already know it, and file-organiser isn't trying to duplicate it; `du -ch --max-depth 1` gives a quick breakdown with an accurate grand total.
+
 ## Known Issues
 
-- Reading deeply nested directories with large numbers of files can be slow. The default max depth is thus set to 10. If you just want to find out the total disk usage, use `du -ch --max-depth 1` instead.
+- Reading deeply nested directories with large numbers of files can be slow. The default max depth is thus set to 10. Unlike `du --max-depth`, `-d` here also bounds what's scanned - and so the size totals - not just the displayed breakdown; see [Disk Usage vs Apparent Size](#disk-usage-vs-apparent-size).
 - If the target path ends in a filename with a wildcard, the command line interpreter will expand it internally into an array all matching file names. This is inefficient for 100 or more matching file names. Instead use the `-e jpeg,jpg` extension or `-p file_name_pattern` options when filtering by name or extension on thousands of files.
 - The current implementation has to scan all directories and files before applying post-filters such as pattern matching. The standard _find . -name '[pattern]'_ is much faster if all you need to do is to find a file.
 - `--exclude-dirs` currently filters excluded directories out of the results, but doesn't yet stop the underlying scan from descending into them - so it avoids the summarisation cost but not the raw filesystem read cost. Scanning a project root with a huge `node_modules` tree without excluding it will still be slow; excluding it is much faster but not entirely free of that walk.
@@ -122,4 +131,7 @@ Version 0.2.0 updates all dependencies and includes several fixes and new featur
 - Fixed an off-by-one in `--max-depth`/`-d`: it previously scanned one level shallower than requested (`-d 5` only reached 4 levels of nested subdirectories). Verified against a real move/delete run, not just listing/counting, since this gate also controls which directories get operated on.
 - Raised the default `--max-depth` from 5 to 10. Benchmarked scanning an 18,000-file, 20-level-deep tree: time scales linearly with file count regardless of depth, no blowup, thanks in part to the cloning fixes above.
 - Fixed the main cause of very slow scans on projects with large `node_modules` trees: matching a nested file to its containing directory was an O(files x directories) linear scan re-allocating a string per candidate, and computing each directory's subdirectory count for display did its own redundant `readdir` + per-entry `stat`, entirely independent of the main scan, for every directory encountered. Both are now O(1)/lazy. Verified this is an asymptotic fix, not just a constant-factor speedup: 5x the directories and 1.67x the files only cost 2.8x more time, not the ~8x a quadratic algorithm would produce.
+- Fixed `size()` re-stat-ing every file on each call instead of caching it - it was being called ~4 times per file across a scan, confirmed by an atomic counter (98,230 calls for 23,623 files). Now extracted once, alongside the modified time, from a single `metadata()` call at construction.
+- Added a "disk usage" figure alongside "total size"; see [Disk Usage vs Apparent Size](#disk-usage-vs-apparent-size).
+- Relabelled "tot. size"/"min. size"/"max. size" to "total size"/"min size"/"max size".
 - Various internal performance fixes to avoid unnecessary cloning when summarising large directory trees.
