@@ -84,7 +84,14 @@ Substitute `zsh`, `fish`, `elvish` or `powershell` for other shells. The scan pa
 
 ### Localization
 
-All output text (headers, labels, prompts, action verbs, unit words) is looked up by machine name rather than hard-coded, with English defaults built into the binary from `src/lang/en.env`. To override any subset of strings, point the `FO_LANG_FILE` environment variable at a file using the same `KEY=value` format; you only need to list the keys you want to change, everything else falls back to English. Templates use positional placeholders (`{0}`, `{1}`, ...) so a translation can reorder values within a sentence.
+All output text (headers, labels, prompts, action verbs, unit words) is looked up by machine name rather than hard-coded, with English defaults built into the binary from `src/lang/en.env`. Templates use positional placeholders (`{0}`, `{1}`, ...) so a translation can reorder values within a sentence.
+
+New languages can be added without touching any source code:
+
+- Copy `src/lang/en.env` to `lang/<code>.env` (e.g. `lang/fr.env`) in a `lang` directory next to the file-organiser executable, and translate the keys you care about; anything you leave out falls back to English.
+- It's picked up automatically when the system's `LC_ALL`/`LANG` locale matches `<code>`, e.g. `LANG=fr_FR.UTF-8` loads `lang/fr.env` if present.
+- `FO_LANG_DIR` redirects where that `lang` directory is looked up, if you'd rather not place it next to the binary.
+- `FO_LANG_FILE` points at a single file that always wins, regardless of the detected locale - useful for testing a translation or tweaking a handful of strings.
 
 ### Screenshots
 
