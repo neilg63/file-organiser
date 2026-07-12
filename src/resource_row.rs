@@ -362,9 +362,9 @@ impl ResourceTree {
     self.directories.len()
   }
 
-  pub fn num_sub_dirs(&self) -> usize { 
+  pub fn num_sub_dirs(&self) -> usize {
     if self.num_dirs() > 0 {
-      self.directories.clone().into_iter().filter(|rs| rs.depth() == 1).collect::<Vec<Box<ResourceSet>>>().len()
+      self.directories.iter().filter(|rs| rs.depth() == 1).count()
     } else {
       0
     }
@@ -547,29 +547,22 @@ impl ResourceTree {
     for directory in &self.directories {
       if self.parent.is_some() {
         if directory.as_ref().depth() < self.max_depth {
-          for mut resource in directory.resources.clone() {
+          for resource in &directory.resources {
             let file_size = resource.size();
             let mut success = false;
             match action {
                ActionMode::Copy => {
-                let (copied, target_path) = copy_file(&resource, &target, &root_ref);
-                if copied {
-                  resource.set_target(&target_path);
-                  success = true;
-                }
+                let (copied, _target_path) = copy_file(resource, &target, &root_ref);
+                success = copied;
               },
                ActionMode::Move => {
-                let (moved, target_path) = move_file(&resource, &target, &root_ref);
-                if moved {
-                  resource.set_target(&target_path);
-                  success = true;
-                }
+                let (moved, _target_path) = move_file(resource, &target, &root_ref);
+                success = moved;
               },
               ActionMode::DirectDelete | ActionMode::Delete => {
                 if let Ok(_success) = remove_file(resource.path_ref()) {
-                  resource.set_deleted();
                   success = true;
-                }                
+                }
               },
               _ => {}
             }
