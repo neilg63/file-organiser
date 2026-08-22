@@ -1,7 +1,7 @@
 [package]
 name = "file-organiser"
 description = "Command line file manager to list, move or delete large numbers of files in nested folders filtered by age, file extension, file name pattern and/or size range."
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 repository = "https://github.com/neilg63/file-organiser"
 categories = ["text-processing", "parsing"]
@@ -9,11 +9,11 @@ license = "GPL-2.0-or-later WITH Bison-exception-2.2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dotenv = "0.15.0"
-clap = { version = "4.6.1", features = ["derive", "cargo"] }
+dotenvy = "0.15.0"
+clap = { version = "4.6.6", features = ["derive", "cargo"] }
 walkdir = "2.5.0"
 chrono = "0.4.45"
 color-print = "0.3.7"
 size = "0.5.0"
 string-patterns = "0.4.0"
-clap_complete = "4.6.7"
+clap_complete = "4.6.9"

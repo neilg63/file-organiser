@@ -83,11 +83,28 @@ Should you wish to delete these files, add a `--delete` or `-u` flag (`-d` stand
 
 ## Installation
 
-- First ensure you have installed the [Rust Cargo compiler](https://doc.rust-lang.org/cargo/getting-started/installation.html) for your operating system
-- checkout out the repository and change into its directory
-- Run `cargo build --release`
-- The executable will be at `target/release/file-organiser`
-- Add an alias to the file-organiser, e.g. **fileorg**, or add a symbolic link to it a directory already in your system's export path.
+### Installing via Cargo
+
+```sh
+cargo install file-organiser
+```
+
+This installs the `file-organiser` executable to `~/.cargo/bin/`. To invoke it with a shorter name, add an alias to your shell's config file and reload it:
+
+**bash** (`~/.bashrc`) or **zsh** (`~/.zshrc`):
+```sh
+alias forg='file-organiser'
+```
+
+**fish** (`~/.config/fish/config.fish`):
+```sh
+alias forg 'file-organiser'
+```
+
+Or create a symlink once so the short name works in all shells without any config:
+```sh
+ln -s ~/.cargo/bin/file-organiser ~/.cargo/bin/forg
+```
 
 ### Shell Completion
 
